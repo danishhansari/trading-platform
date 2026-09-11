@@ -9,12 +9,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 @AllArgsConstructor
 @Component
@@ -35,11 +37,10 @@ public class JwtFilter extends OncePerRequestFilter {
             Claims claims = jwtService.validateTokenGetClaims(token);
             userName = claims.getSubject();
             userId = claims.get("userId", Long.class);
-
             request.setAttribute("x-user-id", userId);
-
+            String role = claims.get("role", String.class);
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userName,
-                    null, Collections.emptyList());
+                    null, List.of(new SimpleGrantedAuthority(role)));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
         filterChain.doFilter(request, response);

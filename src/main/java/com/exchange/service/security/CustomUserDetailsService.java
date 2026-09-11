@@ -3,6 +3,7 @@ package com.exchange.service.security;
 import com.exchange.entity.User;
 import com.exchange.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,7 +19,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     public UserDetails loadUserByEntity(User user) {
         return new org.springframework.security.core.userdetails.User(user.getEmail(),
-                user.getPassword(), Collections.emptyList());
+                user.getPassword(), Collections.singletonList(
+                        new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
+        ));
     }
 
     @Override
@@ -26,6 +29,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user =  userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(email));
         return new org.springframework.security.core.userdetails.User(user.getEmail(),
-                user.getPassword(), Collections.emptyList());
+                user.getPassword(), Collections.singletonList(
+                        new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
+        ));
     }
 }

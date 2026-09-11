@@ -13,9 +13,12 @@ import com.exchange.service.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 
 @RequiredArgsConstructor
 @Service
@@ -34,7 +37,13 @@ public class UserServiceImpl implements UserService {
         User user = UserAssembler.getInstance().assembleDTO(pojo);
         user.setPassword(hashedPassword);
         user = userRepository.save(user);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(),
+                user.getPassword(),
+                Collections.singletonList(
+                        new SimpleGrantedAuthority(
+                                "ROLE_" + user.getRole().name()
+                        )
+                ));
         String jwtToken = jwtService.generateToken(authentication, user.getId());
         UserDTO dto = UserAssembler.getInstance().assembleDetails(user, jwtToken);
         return dto;

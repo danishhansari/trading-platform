@@ -29,11 +29,18 @@ public class JwtService {
     }
 
     public String generateToken(Authentication authentication, Long userId) {
+        String role = authentication.getAuthorities()
+                .stream()
+                .findFirst()
+                .map(authority -> authority.getAuthority())
+                .orElseThrow(() -> new IllegalArgumentException("User Role not found"));
+
         return Jwts.builder()
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 86400000)) // 24 hrs
                 .subject(authentication.getName())
                 .claim("userId", userId)
+                .claim("role", role)
                 .signWith(secretKey)
                 .compact();
     }
