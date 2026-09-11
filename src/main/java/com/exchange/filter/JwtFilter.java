@@ -1,6 +1,6 @@
 package com.exchange.filter;
 
-import com.exchange.constants.JwtConstants;
+import com.exchange.constants.Constants;
 import com.exchange.service.security.JwtService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 @AllArgsConstructor
@@ -32,7 +31,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String userName = null;
         Long userId;
 
-        if(authHeader != null && authHeader.startsWith(JwtConstants.TOKEN_PREFIX)) {
+        if(authHeader != null && authHeader.startsWith(Constants.TOKEN_PREFIX)) {
             token = authHeader.substring(7);
             Claims claims = jwtService.validateTokenGetClaims(token);
             userName = claims.getSubject();

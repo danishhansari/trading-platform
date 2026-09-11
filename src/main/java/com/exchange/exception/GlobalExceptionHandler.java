@@ -30,4 +30,40 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(error);
     }
+    @ExceptionHandler(CompanyAlreadyExists.class)
+    public ResponseEntity<ErrorResponse> handleCompanyAlreadyExists(
+            CompanyAlreadyExists ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
+    @ExceptionHandler(InitialOwnerTraderException.class)
+    public ResponseEntity<ErrorResponse> handleInitialOwnerTraderException(
+            InitialOwnerTraderException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
+    @ExceptionHandler(WalletException.class)
+    public ResponseEntity<ErrorResponse> handleWalletException(
+            WalletException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
 }

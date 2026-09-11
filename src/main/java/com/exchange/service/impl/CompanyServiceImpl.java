@@ -28,17 +28,14 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Transactional
     public CompanyDTO onBoardCompany(CreateCompanyPojo request) {
-        if (companyRepo.existsBySymbol(request.getSymbol())) {
-            throw new CompanyAlreadyExists("Company symbol already exists");
-        }
+        if (companyRepo.existsBySymbol(request.getSymbol())) throw new CompanyAlreadyExists("Company symbol already exists");
 
         User owner = userRepo.findById(request.getInitialOwnerId())
                 .orElseThrow(() ->
                         new UserNotFoundException("Initial holding user doesn't exists")
                 );
-        if (owner.getRole() != UserRole.TRADER) {
-            throw new InitialOwnerTraderException("Initial owner must be a trader");
-        }
+
+        if (owner.getRole() != UserRole.TRADER) throw new InitialOwnerTraderException("Initial owner must be a trader");
 
         Company company = CompanyAssembler.getInstance().assemble(request);
 

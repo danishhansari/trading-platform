@@ -1,6 +1,7 @@
 package com.exchange.service.impl;
 
 import com.exchange.assembler.UserAssembler;
+import com.exchange.constants.UserRole;
 import com.exchange.dto.UserDTO;
 import com.exchange.entity.User;
 import com.exchange.exception.UserAlreadyExists;
@@ -8,8 +9,10 @@ import com.exchange.exception.UserNotFoundException;
 import com.exchange.pojo.RegisterUserPojo;
 import com.exchange.repo.UserRepo;
 import com.exchange.service.UserService;
+import com.exchange.service.WalletService;
 import com.exchange.service.security.CustomUserDetailsService;
 import com.exchange.service.security.JwtService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,8 +30,10 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final CustomUserDetailsService customUserDetailsService;
+    private final WalletService walletService;
 
     @Override
+    @Transactional(rollbackOn = RuntimeException.class)
     public UserDTO signup(RegisterUserPojo pojo) throws Exception {
         userRepository.findByEmail(pojo.getEmail()).ifPresent(e -> {
             throw new UserAlreadyExists("Email already exists");
@@ -37,6 +42,9 @@ public class UserServiceImpl implements UserService {
         User user = UserAssembler.getInstance().assembleDTO(pojo);
         user.setPassword(hashedPassword);
         user = userRepository.save(user);
+        if(user.getRole() == UserRole.TRADER) {
+            walletService.createWallet(user.getId());
+        }
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(),
                 user.getPassword(),
                 Collections.singletonList(
