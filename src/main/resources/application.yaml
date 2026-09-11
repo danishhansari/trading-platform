@@ -1,0 +1,19 @@
+server:
+  servlet:
+    context-path: /api/v1
+spring:
+  application:
+    name: exchange
+
+  datasource:
+    url: url
+    username: username
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+jwt:
+  secret:
+    key: "thispasswordisverytoughtocrackevenicant"
