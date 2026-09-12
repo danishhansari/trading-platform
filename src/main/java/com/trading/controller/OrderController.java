@@ -21,7 +21,15 @@ public class OrderController {
     @PreAuthorize("hasRole('TRADER')")
     public ResponseEntity<OrderDTO> placeOrder(@RequestBody OrderPojo pojo, HttpServletRequest httpServletRequest) {
         Long traderId = (Long) httpServletRequest.getAttribute("x-user-id");
-        OrderDTO order = orderService.placeOrder(traderId, pojo);
-        return ResponseEntity.status(HttpStatus.CREATED).body(order);
+        OrderDTO orderDTO = orderService.placeOrder(traderId, pojo);
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderDTO);
+    }
+
+    @DeleteMapping("/{orderId}")
+    @PreAuthorize("hasRole('TRADER')")
+    public ResponseEntity<OrderDTO> cancelOrder(@PathVariable Long orderId, HttpServletRequest httpServletRequest) {
+        Long traderId = (Long) httpServletRequest.getAttribute("x-user-id");
+        OrderDTO orderDTO = orderService.cancelOrder(traderId, orderId);
+        return ResponseEntity.ok(orderDTO);
     }
 }

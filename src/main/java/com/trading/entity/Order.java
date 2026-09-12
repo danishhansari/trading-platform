@@ -59,4 +59,11 @@ public class Order {
         remainingQuantity -= executedQuantity;
         status = (remainingQuantity == 0) ? OrderStatus.FILLED : OrderStatus.PARTIALLY_FILLED;
     }
+
+    public void cancel() {
+        if (this.status != OrderStatus.OPEN && this.status != OrderStatus.PARTIALLY_FILLED) {
+            throw new IllegalStateException("Only open or partially filled orders can be cancelled");
+        }
+        this.status = OrderStatus.CANCELLED;
+    }
 }

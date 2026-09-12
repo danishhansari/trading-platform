@@ -5,4 +5,5 @@ import com.trading.pojo.OrderPojo;
 
 public interface OrderService {
     OrderDTO placeOrder(Long traderId, OrderPojo pojo);
+    OrderDTO cancelOrder(Long traderId, Long orderId);
 }

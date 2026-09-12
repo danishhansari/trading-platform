@@ -2,6 +2,7 @@ package com.trading.service.impl;
 
 import com.trading.assembler.OrderAssembler;
 import com.trading.constants.OrderSide;
+import com.trading.constants.OrderStatus;
 import com.trading.constants.UserRole;
 import com.trading.dto.OrderDTO;
 import com.trading.entity.Company;
@@ -50,6 +51,27 @@ public class OrderServiceImpl implements OrderService {
         Order order = OrderAssembler.getInstance().assemble(pojo, company, trader);
         order = orderRepo.save(order);
         matchingEngineService.match(company.getId());
+
+        return OrderAssembler.getInstance().assembleDetails(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderDTO cancelOrder(Long traderId, Long orderId) {
+
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+
+        if (!order.getTrader().getId().equals(traderId)) {
+            throw new UnauthorizedOrderAccessException("Cannot cancel another trader's order");
+        }
+
+        if (order.getStatus() != OrderStatus.OPEN && order.getStatus() != OrderStatus.PARTIALLY_FILLED) {
+            throw new OrderNotCancellableException("Only open or partially filled orders can be cancelled");
+        }
+
+        order.cancel();
+        orderRepo.save(order);
 
         return OrderAssembler.getInstance().assembleDetails(order);
     }
