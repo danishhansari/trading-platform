@@ -1,0 +1,51 @@
+package com.trading.assembler;
+
+import com.trading.constants.OrderStatus;
+import com.trading.dto.OrderDTO;
+import com.trading.dto.TradeDTO;
+import com.trading.entity.Company;
+import com.trading.entity.Order;
+import com.trading.entity.Trade;
+import com.trading.entity.User;
+import com.trading.pojo.OrderPojo;
+
+import java.math.BigDecimal;
+
+public class TradeAssembler {
+    private static TradeAssembler instance;
+
+    private TradeAssembler() {}
+
+    public static TradeAssembler getInstance() {
+        if (instance == null) {
+            synchronized (TradeAssembler.class) {
+                if (instance == null) {
+                    instance = new TradeAssembler();
+                }
+            }
+        }
+        return instance;
+    }
+
+    public Trade assemble(Order buy, Order sell, Company company, Long executedQty, BigDecimal executionPrice) {
+        Trade trade = new Trade();
+        trade.setBuyOrder(buy);
+        trade.setSellOrder(sell);
+        trade.setCompany(company);
+        trade.setQuantity(executedQty);
+        trade.setPrice(executionPrice);
+        return trade;
+    }
+
+    public TradeDTO assembleDetails(Trade trade) {
+        return new TradeDTO(
+                trade.getId(),
+                trade.getBuyOrder().getId(),
+                trade.getSellOrder().getId(),
+                trade.getCompany().getId(),
+                trade.getQuantity(),
+                trade.getPrice(),
+                trade.getExecutedAt()
+        );
+    }
+}
