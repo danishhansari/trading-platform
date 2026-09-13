@@ -10,6 +10,7 @@ import com.trading.entity.Holding;
 import com.trading.entity.Order;
 import com.trading.entity.User;
 import com.trading.entity.Wallet;
+import com.trading.event.OrderPlacedEvent;
 import com.trading.exception.*;
 import com.trading.pojo.OrderPojo;
 import com.trading.repo.CompanyRepo;
@@ -17,9 +18,9 @@ import com.trading.repo.HoldingRepo;
 import com.trading.repo.OrderRepo;
 import com.trading.repo.UserRepo;
 import com.trading.repo.WalletRepo;
-import com.trading.service.MatchingEngineService;
 import com.trading.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +35,7 @@ public class OrderServiceImpl implements OrderService {
     private final CompanyRepo companyRepo;
     private final WalletRepo walletRepo;
     private final HoldingRepo holdingRepo;
-    private final MatchingEngineService matchingEngineService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     @Transactional
@@ -50,7 +51,10 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = OrderAssembler.getInstance().assemble(pojo, company, trader);
         order = orderRepo.save(order);
-        matchingEngineService.match(company.getId());
+
+        applicationEventPublisher.publishEvent(new OrderPlacedEvent(order.getId(),
+                company.getId(), traderId, order.getSide(), order.getQuantity(),
+                order.getPrice(), order.getCreatedAt()));
 
         return OrderAssembler.getInstance().assembleDetails(order);
     }

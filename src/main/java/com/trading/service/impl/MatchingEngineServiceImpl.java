@@ -9,6 +9,7 @@ import com.trading.repo.OrderRepo;
 import com.trading.repo.TradeRepo;
 import com.trading.service.MatchingEngineService;
 import com.trading.service.SettlementService;
+import com.trading.utils.CompanyMatchLockRegistry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,10 +28,17 @@ public class MatchingEngineServiceImpl implements MatchingEngineService {
     private final OrderRepo orderRepo;
     private final TradeRepo tradeRepo;
     private final SettlementService settlementService;
+    private final CompanyMatchLockRegistry companyMatchLockRegistry;
 
     @Override
     @Transactional
     public List<TradeDTO> match(Long companyId) {
+        synchronized (companyMatchLockRegistry.lockFor(companyId)) {
+            return doMatch(companyId);
+        }
+    }
+
+    public List<TradeDTO> doMatch(Long companyId) {
 
         List<Order> buys = new ArrayList<>(orderRepo.findByCompanyIdAndSideAndStatusInOrderByPriceDescCreatedAtAsc(
                 companyId, OrderSide.BUY, BOOKABLE));
@@ -66,12 +74,12 @@ public class MatchingEngineServiceImpl implements MatchingEngineService {
                 }
             }
         }
-
+        orderRepo.saveAll(buys);
+        orderRepo.saveAll(sells);
         tradeRepo.saveAll(trades);
         settlementService.settle(trades);
 
         return trades.stream()
-                .map(TradeAssembler
-                        .getInstance()::assembleDetails).toList();
+                .map(TradeAssembler.getInstance()::assembleDetails).toList();
     }
 }

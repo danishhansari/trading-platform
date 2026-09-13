@@ -3,8 +3,7 @@ server:
     context-path: /api/v1
 spring:
   application:
-    name: exchange
-
+    name: trading
   datasource:
     url: url
     username: username
@@ -14,6 +13,21 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  kafka:
+    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
+    producer:
+      acks: all
+      retries: 3
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+    consumer:
+      group-id: matching-engine-group
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.trading.event"
+      auto-offset-reset: earliest
+
 jwt:
   secret:
     key: "thispasswordisverytoughtocrackevenicant"
