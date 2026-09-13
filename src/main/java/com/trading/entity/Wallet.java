@@ -32,6 +32,9 @@ public class Wallet {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal balance;
 
+    @Version
+    private Long version;
+
     public void credit(BigDecimal amount) {
         this.balance = this.balance.add(amount);
     }

@@ -7,7 +7,11 @@ import com.trading.exception.WalletNotFoundException;
 import com.trading.repo.HoldingRepo;
 import com.trading.repo.WalletRepo;
 import com.trading.service.SettlementService;
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +26,11 @@ public class SettlementServiceImpl implements SettlementService {
     private final HoldingRepo holdingRepo;
 
     @Override
+    @Retryable(
+            retryFor = { OptimisticLockException.class, ObjectOptimisticLockingFailureException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 50, multiplier = 2)
+    )
     @Transactional
     public void settle(List<Trade> trades) {
         for (Trade trade : trades) {

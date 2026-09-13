@@ -1,7 +1,7 @@
 package com.trading.filter;
 
 import com.trading.constants.Constants;
-import com.trading.service.security.JwtService;
+import com.trading.security.JwtService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

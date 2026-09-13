@@ -41,6 +41,9 @@ public class Holding {
     @Column(nullable = false)
     private Long quantity;
 
+    @Version
+    private Long version;
+
     public void increase(Long amount) {
         if (amount == null || amount <= 0) throw new IllegalArgumentException("Amount must be greater than zero");
         this.quantity += amount;

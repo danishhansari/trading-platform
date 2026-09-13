@@ -49,6 +49,9 @@ public class Order {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @Version
+    private Long version;
+
     public void reduceRemainingQuantity(Long executedQuantity) {
         if (executedQuantity == null || executedQuantity <= 0) {
             throw new IllegalArgumentException("Executed quantity must be greater than zero");

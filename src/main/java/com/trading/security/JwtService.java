@@ -1,4 +1,4 @@
-package com.trading.service.security;
+package com.trading.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

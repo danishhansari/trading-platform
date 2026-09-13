@@ -1,4 +1,4 @@
-package com.trading.service.security;
+package com.trading.security;
 
 import com.trading.entity.User;
 import com.trading.repo.UserRepo;
