@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(UserAlreadyExists.class)
-    public ResponseEntity<ErrorResponse> handleUserAlreadyExistsException(
-            UserAlreadyExists ex) {
+    @ExceptionHandler(UserException.class)
+    public ResponseEntity<ErrorResponse> handleUserException(
+            UserException ex) {
 
         ErrorResponse error = new ErrorResponse(
                 ex.getMessage()
@@ -18,33 +18,9 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(error);
     }
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFoundException(
-            UserNotFoundException ex) {
-
-        ErrorResponse error = new ErrorResponse(
-                ex.getMessage()
-        );
-
-        return ResponseEntity
-                .badRequest()
-                .body(error);
-    }
-    @ExceptionHandler(CompanyAlreadyExists.class)
-    public ResponseEntity<ErrorResponse> handleCompanyAlreadyExists(
-            CompanyAlreadyExists ex) {
-
-        ErrorResponse error = new ErrorResponse(
-                ex.getMessage()
-        );
-
-        return ResponseEntity
-                .badRequest()
-                .body(error);
-    }
-    @ExceptionHandler(InitialOwnerTraderException.class)
-    public ResponseEntity<ErrorResponse> handleInitialOwnerTraderException(
-            InitialOwnerTraderException ex) {
+    @ExceptionHandler(CompanyException.class)
+    public ResponseEntity<ErrorResponse> handleCompanyExists(
+            CompanyException ex) {
 
         ErrorResponse error = new ErrorResponse(
                 ex.getMessage()
@@ -55,22 +31,9 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    @ExceptionHandler(CompanyNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleCompanyNotFoundException(
-            CompanyNotFoundException ex) {
-
-        ErrorResponse error = new ErrorResponse(
-                ex.getMessage()
-        );
-
-        return ResponseEntity
-                .badRequest()
-                .body(error);
-    }
-
-    @ExceptionHandler(HoldingNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleHoldingNotFoundException(
-            HoldingNotFoundException ex) {
+    @ExceptionHandler(HoldingException.class)
+    public ResponseEntity<ErrorResponse> handleHoldingException(
+            HoldingException ex) {
 
         ErrorResponse error = new ErrorResponse(
                 ex.getMessage()
@@ -94,9 +57,9 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-    @ExceptionHandler(InsufficientHoldingException.class)
-    public ResponseEntity<ErrorResponse> handleInsufficientHoldingException(
-            InsufficientHoldingException ex) {
+    @ExceptionHandler(WalletException.class)
+    public ResponseEntity<ErrorResponse> handleWalletException(
+            WalletException ex) {
 
         ErrorResponse error = new ErrorResponse(
                 ex.getMessage()
@@ -106,4 +69,18 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(error);
     }
+
+    @ExceptionHandler(OrderException.class)
+    public ResponseEntity<ErrorResponse> handleOrderException(
+            OrderException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
+
 }

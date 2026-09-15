@@ -1,6 +1,5 @@
 package com.trading.utils;
 
-import com.trading.config.RedisConfig;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -15,20 +14,21 @@ public class RedisLockService {
     private RedissonClient redissonClient;
 
     public boolean tryLock(Long companyId) {
-        redissonClient = RedisConfig.getRedissonClient();
+//        redissonClient = RedisConfig.getRedissonClient();
         String key = LOCK_PREFIX + companyId;
         RLock lock = redissonClient.getLock(key);
-        return lock.tryLock();
+//        return lock.tryLock();
+        return true;
     }
 
     public void unlock(Long companyId) {
-        redissonClient = RedisConfig.getRedissonClient();
-        String key = LOCK_PREFIX + companyId;
-
-        RLock lock = redissonClient.getLock(key);
-
-        if (lock.isHeldByCurrentThread()) {
-            lock.unlock();
-        }
+//        redissonClient = RedisConfig.getRedissonClient();
+//        String key = LOCK_PREFIX + companyId;
+//
+//        RLock lock = redissonClient.getLock(key);
+//
+//        if (lock.isHeldByCurrentThread()) {
+//            lock.unlock();
+//        }
     }
 }

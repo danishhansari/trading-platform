@@ -1,6 +1,6 @@
 package com.trading.pojo;
 
-import com.trading.constants.OrderSide;
+import com.trading.enums.OrderSide;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,5 +13,4 @@ public class OrderPojo {
     private OrderSide side;
     private Long quantity;
     private BigDecimal price;
-
 }

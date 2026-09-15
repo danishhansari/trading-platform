@@ -1,23 +1,19 @@
 package com.trading.service.impl;
 
 import com.trading.assembler.UserAssembler;
-import com.trading.constants.UserRole;
+import com.trading.enums.UserRole;
 import com.trading.dto.UserDTO;
 import com.trading.entity.User;
-import com.trading.event.OrderPlacedEvent;
 import com.trading.event.UserCreatedEvent;
-import com.trading.exception.UserAlreadyExists;
-import com.trading.exception.UserNotFoundException;
+import com.trading.exception.UserException;
 import com.trading.pojo.RegisterUserPojo;
 import com.trading.producers.UserEventProducer;
 import com.trading.repo.UserRepo;
 import com.trading.service.UserService;
-import com.trading.service.WalletService;
 import com.trading.security.CustomUserDetailsService;
 import com.trading.security.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -35,15 +31,16 @@ public class UserServiceImpl implements UserService {
     private final JwtService jwtService;
     private final CustomUserDetailsService customUserDetailsService;
     private final UserEventProducer applicationEventPublisher;
+    private final UserAssembler userAssembler;
 
     @Override
     @Transactional(rollbackOn = RuntimeException.class)
-    public UserDTO signup(RegisterUserPojo pojo) throws Exception {
+    public UserDTO signup(RegisterUserPojo pojo) {
         userRepository.findByEmail(pojo.getEmail()).ifPresent(e -> {
-            throw new UserAlreadyExists("Email already exists");
+            throw new UserException("Email already exists");
         });
         String hashedPassword = passwordEncoder.encode(pojo.getPassword());
-        User user = UserAssembler.getInstance().assembleDTO(pojo);
+        User user = userAssembler.assembleDTO(pojo);
         user.setPassword(hashedPassword);
         user = userRepository.save(user);
         if(user.getRole() == UserRole.TRADER) {
@@ -57,20 +54,20 @@ public class UserServiceImpl implements UserService {
                         )
                 ));
         String jwtToken = jwtService.generateToken(authentication, user.getId());
-        return UserAssembler.getInstance().assembleDetails(user, jwtToken);
+        return userAssembler.assembleDetails(user, jwtToken);
     }
 
     @Override
-    public UserDTO login(String email, String password) throws Exception {
+    public UserDTO login(String email, String password){
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserException("User not found"));
         Authentication authentication = authentication(password, user);
         String jwtToken = jwtService.generateToken(authentication,user.getId());
-        return UserAssembler.getInstance().assembleDetails(user, jwtToken);
+        return userAssembler.assembleDetails(user, jwtToken);
     }
 
     public Authentication authentication(String password, User user) {
-        if (!passwordEncoder.matches(password, user.getPassword())) throw new UserNotFoundException("Invalid credentials");
+        if (!passwordEncoder.matches(password, user.getPassword())) throw new UserException("Invalid credentials");
         UserDetails userDetails = customUserDetailsService.loadUserByEntity(user);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }

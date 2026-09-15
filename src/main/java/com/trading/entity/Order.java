@@ -1,7 +1,8 @@
 package com.trading.entity;
 
-import com.trading.constants.OrderSide;
-import com.trading.constants.OrderStatus;
+import com.trading.enums.OrderSide;
+import com.trading.enums.OrderStatus;
+import com.trading.exception.OrderException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -54,10 +55,10 @@ public class Order {
 
     public void reduceRemainingQuantity(Long executedQuantity) {
         if (executedQuantity == null || executedQuantity <= 0) {
-            throw new IllegalArgumentException("Executed quantity must be greater than zero");
+            throw new OrderException("Executed quantity must be greater than zero");
         }
         if (executedQuantity > remainingQuantity) {
-            throw new IllegalArgumentException("Executed quantity cannot exceed remaining quantity");
+            throw new OrderException("Executed quantity cannot exceed remaining quantity");
         }
         remainingQuantity -= executedQuantity;
         status = (remainingQuantity == 0) ? OrderStatus.FILLED : OrderStatus.PARTIALLY_FILLED;
@@ -65,7 +66,7 @@ public class Order {
 
     public void cancel() {
         if (this.status != OrderStatus.OPEN && this.status != OrderStatus.PARTIALLY_FILLED) {
-            throw new IllegalStateException("Only open or partially filled orders can be cancelled");
+            throw new OrderException("Only open or partially filled orders can be cancelled");
         }
         this.status = OrderStatus.CANCELLED;
     }

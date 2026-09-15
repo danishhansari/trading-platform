@@ -1,6 +1,6 @@
 package com.trading.pojo;
 
-import com.trading.constants.UserRole;
+import com.trading.enums.UserRole;
 import lombok.Getter;
 import lombok.Setter;
 

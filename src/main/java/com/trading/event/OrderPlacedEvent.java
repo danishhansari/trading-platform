@@ -1,6 +1,6 @@
 package com.trading.event;
 
-import com.trading.constants.OrderSide;
+import com.trading.enums.OrderSide;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

@@ -1,7 +1,7 @@
 package com.trading.service.impl;
 
 import com.trading.assembler.WalletAssembler;
-import com.trading.constants.UserRole;
+import com.trading.enums.UserRole;
 import com.trading.dto.WalletDTO;
 import com.trading.entity.User;
 import com.trading.entity.Wallet;
@@ -29,10 +29,10 @@ public class WalletServiceImpl implements WalletService {
     public Wallet createWallet(Long userId) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() ->
-                        new UserNotFoundException("User not found")
+                        new UserException("User not found")
                 );
 
-        if (user.getRole() != UserRole.TRADER) throw new InitialOwnerTraderException("Wallet can only be created for a trader");
+        if (user.getRole() != UserRole.TRADER) throw new WalletException("Wallet can only be created for a trader");
 
         Wallet wallet = new Wallet();
         wallet.setUser(user);

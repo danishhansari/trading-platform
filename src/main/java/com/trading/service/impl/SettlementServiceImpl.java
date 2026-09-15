@@ -2,8 +2,8 @@ package com.trading.service.impl;
 
 
 import com.trading.entity.*;
-import com.trading.exception.HoldingNotFoundException;
-import com.trading.exception.WalletNotFoundException;
+import com.trading.exception.HoldingException;
+import com.trading.exception.WalletException;
 import com.trading.repo.HoldingRepo;
 import com.trading.repo.WalletRepo;
 import com.trading.service.SettlementService;
@@ -46,9 +46,9 @@ public class SettlementServiceImpl implements SettlementService {
         BigDecimal amount = trade.getPrice().multiply(BigDecimal.valueOf(trade.getQuantity()));
 
         Wallet buyerWallet = walletRepo.findByUserId(buyer.getId())
-                .orElseThrow(() -> new WalletNotFoundException("Buyer wallet not found"));
+                .orElseThrow(() -> new WalletException("Buyer wallet not found"));
         Wallet sellerWallet = walletRepo.findByUserId(seller.getId())
-                .orElseThrow(() -> new WalletNotFoundException("Seller wallet not found"));
+                .orElseThrow(() -> new WalletException("Seller wallet not found"));
 
         buyerWallet.debit(amount);
         sellerWallet.credit(amount);
@@ -56,7 +56,7 @@ public class SettlementServiceImpl implements SettlementService {
         Holding buyerHolding = holdingRepo.findByUserIdAndCompanyId(buyer.getId(), company.getId())
                 .orElseGet(() -> holdingRepo.save(new Holding(buyer, company)));
         Holding sellerHolding = holdingRepo.findByUserIdAndCompanyId(seller.getId(), company.getId())
-                .orElseThrow(() -> new HoldingNotFoundException("Seller holding not found"));
+                .orElseThrow(() -> new HoldingException("Seller holding not found"));
 
         buyerHolding.increase(trade.getQuantity());
         sellerHolding.decrease(trade.getQuantity());

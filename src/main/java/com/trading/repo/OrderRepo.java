@@ -1,7 +1,7 @@
 package com.trading.repo;
 
-import com.trading.constants.OrderSide;
-import com.trading.constants.OrderStatus;
+import com.trading.enums.OrderSide;
+import com.trading.enums.OrderStatus;
 import com.trading.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 

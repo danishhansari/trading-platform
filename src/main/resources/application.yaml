@@ -5,9 +5,9 @@ spring:
   application:
     name: trading
   datasource:
-    url: jdbc:postgresql://localhost:5432/trading-system
-    username: username
-    password: password
+    url: jdbc:postgresql://localhost:5432/exchange
+    username: exchange_user
+    password: exchange_password
   jpa:
     hibernate:
       ddl-auto: update

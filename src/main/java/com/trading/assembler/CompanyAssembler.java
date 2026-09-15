@@ -2,7 +2,7 @@ package com.trading.assembler;
 
 import com.trading.dto.CompanyDTO;
 import com.trading.entity.Company;
-import com.trading.constants.CompanyStatus;
+import com.trading.enums.CompanyStatus;
 import com.trading.pojo.CreateCompanyPojo;
 
 public class CompanyAssembler {

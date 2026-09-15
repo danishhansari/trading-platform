@@ -2,7 +2,7 @@ package com.trading.service.impl;
 
 
 import com.trading.assembler.OrderAssembler;
-import com.trading.constants.OrderSide;
+import com.trading.enums.OrderSide;
 import com.trading.dto.OrderDTO;
 import com.trading.repo.OrderRepo;
 import com.trading.service.OrderBookService;

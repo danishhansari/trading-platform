@@ -1,5 +1,7 @@
 package com.trading.constants;
 
+import com.trading.enums.OrderStatus;
+
 import java.math.BigDecimal;
 import java.util.List;
 

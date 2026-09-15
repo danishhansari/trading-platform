@@ -1,6 +1,6 @@
 package com.trading.entity;
 
-import com.trading.constants.UserRole;
+import com.trading.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package com.trading.assembler;
 
-import com.trading.constants.OrderStatus;
+import com.trading.enums.OrderStatus;
 import com.trading.dto.OrderDTO;
 import com.trading.entity.Company;
 import com.trading.entity.Order;

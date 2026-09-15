@@ -32,7 +32,7 @@ public class JwtFilter extends OncePerRequestFilter {
         Long userId;
 
         if(authHeader != null && authHeader.startsWith(Constants.TOKEN_PREFIX)) {
-            token = authHeader.substring(7);
+            token = authHeader.substring(Constants.TOKEN_PREFIX.length());
             Claims claims = jwtService.validateTokenGetClaims(token);
             userName = claims.getSubject();
             userId = claims.get("userId", Long.class);

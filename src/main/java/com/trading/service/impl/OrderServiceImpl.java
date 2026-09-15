@@ -1,9 +1,9 @@
 package com.trading.service.impl;
 
 import com.trading.assembler.OrderAssembler;
-import com.trading.constants.OrderSide;
-import com.trading.constants.OrderStatus;
-import com.trading.constants.UserRole;
+import com.trading.enums.OrderSide;
+import com.trading.enums.OrderStatus;
+import com.trading.enums.UserRole;
 import com.trading.dto.OrderDTO;
 import com.trading.entity.Company;
 import com.trading.entity.Holding;
@@ -43,7 +43,9 @@ public class OrderServiceImpl implements OrderService {
 
         User trader = getTrader(traderId);
 
-        Company company = companyRepo.findById(pojo.getCompanyId()).orElseThrow(() -> new CompanyNotFoundException("Company not found"));
+        Company company = companyRepo.findById(pojo.getCompanyId())
+                .orElseThrow(() -> new CompanyException("Company not found"));
+
         validateOrder(pojo);
 
         if (pojo.getSide() == OrderSide.BUY) validateBuyOrder(traderId, pojo.getQuantity(), pojo.getPrice());
@@ -64,14 +66,14 @@ public class OrderServiceImpl implements OrderService {
     public OrderDTO cancelOrder(Long traderId, Long orderId) {
 
         Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+                .orElseThrow(() -> new OrderException("Order not found"));
 
         if (!order.getTrader().getId().equals(traderId)) {
-            throw new UnauthorizedOrderAccessException("Cannot cancel another trader's order");
+            throw new OrderException("Cannot cancel another trader's order");
         }
 
         if (order.getStatus() != OrderStatus.OPEN && order.getStatus() != OrderStatus.PARTIALLY_FILLED) {
-            throw new OrderNotCancellableException("Only open or partially filled orders can be cancelled");
+            throw new OrderException("Only open or partially filled orders can be cancelled");
         }
 
         order.cancel();
@@ -83,7 +85,7 @@ public class OrderServiceImpl implements OrderService {
     private User getTrader(Long traderId) {
 
         User trader = userRepo.findById(traderId)
-                .orElseThrow(() -> new UserNotFoundException("Trader not found")
+                .orElseThrow(() -> new UserException("Trader not found")
                 );
 
         if (trader.getRole() != UserRole.TRADER) {
@@ -102,17 +104,17 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal orderValue = price.multiply(BigDecimal.valueOf(quantity));
 
         if (wallet.getBalance().compareTo(orderValue) < 0) {
-            throw new InsufficientWalletBalanceException("Insufficient wallet balance for order");
+            throw new WalletException("Insufficient wallet balance for order");
         }
     }
 
     private void validateSellOrder(Long traderId, Long companyId, Long quantity) {
         Holding holding = holdingRepo.findByUserIdAndCompanyId(traderId, companyId)
-                        .orElseThrow(() -> new HoldingNotFoundException("Holding not found for company")
+                        .orElseThrow(() -> new HoldingException("Holding not found for company")
                 );
 
         if (holding.getQuantity() < quantity) {
-            throw new InsufficientHoldingException("Insufficient shares for order");
+            throw new HoldingException("Insufficient shares for order");
         }
     }
 

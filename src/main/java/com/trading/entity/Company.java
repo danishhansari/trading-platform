@@ -1,6 +1,6 @@
 package com.trading.entity;
 
-import com.trading.constants.CompanyStatus;
+import com.trading.enums.CompanyStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

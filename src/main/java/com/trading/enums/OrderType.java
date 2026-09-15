@@ -1,4 +1,4 @@
-package com.trading.constants;
+package com.trading.enums;
 
 public enum OrderType {
     LIMIT,

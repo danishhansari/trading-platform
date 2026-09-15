@@ -1,14 +1,13 @@
 package com.trading.service.impl;
 
 import com.trading.assembler.CompanyAssembler;
-import com.trading.constants.UserRole;
+import com.trading.enums.UserRole;
 import com.trading.dto.CompanyDTO;
 import com.trading.entity.Company;
 import com.trading.entity.Holding;
 import com.trading.entity.User;
-import com.trading.exception.CompanyAlreadyExists;
-import com.trading.exception.InitialOwnerTraderException;
-import com.trading.exception.UserNotFoundException;
+import com.trading.exception.CompanyException;
+import com.trading.exception.UserException;
 import com.trading.pojo.CreateCompanyPojo;
 import com.trading.repo.CompanyRepo;
 import com.trading.repo.HoldingRepo;
@@ -28,14 +27,14 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Transactional
     public CompanyDTO onBoardCompany(CreateCompanyPojo request) {
-        if (companyRepo.existsBySymbol(request.getSymbol())) throw new CompanyAlreadyExists("Company symbol already exists");
+        if (companyRepo.existsBySymbol(request.getSymbol())) throw new CompanyException("Company symbol already exists");
 
         User owner = userRepo.findById(request.getInitialOwnerId())
                 .orElseThrow(() ->
-                        new UserNotFoundException("Initial holding user doesn't exists")
+                        new UserException("Initial holding user doesn't exists")
                 );
 
-        if (owner.getRole() != UserRole.TRADER) throw new InitialOwnerTraderException("Initial owner must be a trader");
+        if (owner.getRole() != UserRole.TRADER) throw new UserException("Initial owner must be a trader");
 
         Company company = CompanyAssembler.getInstance().assemble(request);
 

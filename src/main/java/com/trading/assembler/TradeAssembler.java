@@ -1,13 +1,9 @@
 package com.trading.assembler;
 
-import com.trading.constants.OrderStatus;
-import com.trading.dto.OrderDTO;
 import com.trading.dto.TradeDTO;
 import com.trading.entity.Company;
 import com.trading.entity.Order;
 import com.trading.entity.Trade;
-import com.trading.entity.User;
-import com.trading.pojo.OrderPojo;
 
 import java.math.BigDecimal;
 
