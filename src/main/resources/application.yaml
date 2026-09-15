@@ -5,14 +5,16 @@ spring:
   application:
     name: trading
   datasource:
-    url: url
+    url: jdbc:postgresql://localhost:5432/trading-system
     username: username
     password: password
-    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+  redis:
+    redisson:
+      file: classpath:redisson.yml
   kafka:
     bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
     producer:

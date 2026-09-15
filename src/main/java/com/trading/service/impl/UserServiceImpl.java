@@ -4,9 +4,12 @@ import com.trading.assembler.UserAssembler;
 import com.trading.constants.UserRole;
 import com.trading.dto.UserDTO;
 import com.trading.entity.User;
+import com.trading.event.OrderPlacedEvent;
+import com.trading.event.UserCreatedEvent;
 import com.trading.exception.UserAlreadyExists;
 import com.trading.exception.UserNotFoundException;
 import com.trading.pojo.RegisterUserPojo;
+import com.trading.producers.UserEventProducer;
 import com.trading.repo.UserRepo;
 import com.trading.service.UserService;
 import com.trading.service.WalletService;
@@ -14,6 +17,7 @@ import com.trading.security.CustomUserDetailsService;
 import com.trading.security.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -30,7 +34,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final CustomUserDetailsService customUserDetailsService;
-    private final WalletService walletService;
+    private final UserEventProducer applicationEventPublisher;
 
     @Override
     @Transactional(rollbackOn = RuntimeException.class)
@@ -43,7 +47,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(hashedPassword);
         user = userRepository.save(user);
         if(user.getRole() == UserRole.TRADER) {
-            walletService.createWallet(user.getId());
+            applicationEventPublisher.publish(new UserCreatedEvent(user.getId()));
         }
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(),
                 user.getPassword(),
@@ -53,8 +57,7 @@ public class UserServiceImpl implements UserService {
                         )
                 ));
         String jwtToken = jwtService.generateToken(authentication, user.getId());
-        UserDTO dto = UserAssembler.getInstance().assembleDetails(user, jwtToken);
-        return dto;
+        return UserAssembler.getInstance().assembleDetails(user, jwtToken);
     }
 
     @Override
@@ -63,8 +66,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         Authentication authentication = authentication(password, user);
         String jwtToken = jwtService.generateToken(authentication,user.getId());
-        UserDTO dto = UserAssembler.getInstance().assembleDetails(user, jwtToken);
-        return dto;
+        return UserAssembler.getInstance().assembleDetails(user, jwtToken);
     }
 
     public Authentication authentication(String password, User user) {

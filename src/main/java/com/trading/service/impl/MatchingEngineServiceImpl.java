@@ -5,13 +5,17 @@ import com.trading.constants.OrderSide;
 import com.trading.dto.TradeDTO;
 import com.trading.entity.Order;
 import com.trading.entity.Trade;
+import com.trading.exception.MatchingLockTimeoutException;
 import com.trading.repo.OrderRepo;
 import com.trading.repo.TradeRepo;
 import com.trading.service.MatchingEngineService;
 import com.trading.service.SettlementService;
 import com.trading.utils.CompanyMatchLockRegistry;
+import com.trading.utils.RedisLockService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -23,18 +27,26 @@ import static com.trading.constants.Constants.BOOKABLE;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MatchingEngineServiceImpl implements MatchingEngineService {
 
     private final OrderRepo orderRepo;
     private final TradeRepo tradeRepo;
     private final SettlementService settlementService;
     private final CompanyMatchLockRegistry companyMatchLockRegistry;
+    private final RedisLockService redisLockService;
 
     @Override
     @Transactional
     public List<TradeDTO> match(Long companyId) {
-        synchronized (companyMatchLockRegistry.lockFor(companyId)) {
+        boolean token = redisLockService.tryLock(companyId);
+        if(!token) {
+            throw new MatchingLockTimeoutException("Could not acquire lock for company " + companyId);
+        }
+        try {
             return doMatch(companyId);
+        } finally {
+            redisLockService.unlock(companyId);
         }
     }
 

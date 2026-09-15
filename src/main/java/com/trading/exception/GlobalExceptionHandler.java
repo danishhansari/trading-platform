@@ -80,4 +80,30 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(error);
     }
+
+    @ExceptionHandler(MatchingLockTimeoutException.class)
+    public ResponseEntity<ErrorResponse> handleMatchingLockTimeoutException(
+            MatchingLockTimeoutException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
+
+    @ExceptionHandler(InsufficientHoldingException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientHoldingException(
+            InsufficientHoldingException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
 }
