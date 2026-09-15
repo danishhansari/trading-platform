@@ -2,23 +2,10 @@ package com.trading.assembler;
 
 import com.trading.dto.WalletDTO;
 import com.trading.entity.Wallet;
+import org.springframework.stereotype.Component;
 
+@Component
 public class WalletAssembler {
-
-    private static WalletAssembler instance;
-    private WalletAssembler() {}
-
-    public static WalletAssembler getInstance() {
-        if (instance == null) {
-            synchronized (WalletAssembler.class) {
-                if (instance == null) {
-                    instance = new WalletAssembler();
-                }
-            }
-        }
-        return instance;
-    }
-
     public WalletDTO assembleDetails(Wallet wallet) {
         return new WalletDTO(
                 wallet.getId(),

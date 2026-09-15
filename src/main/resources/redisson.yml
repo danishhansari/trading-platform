@@ -6,7 +6,28 @@ clusterServersConfig:
     - "redis://127.0.0.1:7004"
     - "redis://127.0.0.1:7005"
     - "redis://127.0.0.1:7006"
+  masterConnectionMinimumIdleSize: 24
+  masterConnectionPoolSize: 64
+  slaveConnectionMinimumIdleSize: 24
+  slaveConnectionPoolSize: 64
+  subscriptionConnectionMinimumIdleSize: 4
+  subscriptionConnectionPoolSize: 24
   scanInterval: 2000
 
-threads: 4
-nettyThreads: 4
+  readMode: MASTER
+  subscriptionMode: MASTER
+
+  connectTimeout: 10000
+  timeout: 3000
+  retryAttempts: 4
+
+  retryDelay: !<org.redisson.config.EqualJitterDelay>
+    baseDelay: PT1S
+    maxDelay: PT2S
+
+  failedSlaveNodeDetector: !<org.redisson.client.FailedConnectionDetector> { }
+
+
+threads: 16
+nettyThreads: 32
+

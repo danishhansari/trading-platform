@@ -4,22 +4,11 @@ import com.trading.dto.CompanyDTO;
 import com.trading.entity.Company;
 import com.trading.enums.CompanyStatus;
 import com.trading.pojo.CreateCompanyPojo;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CompanyAssembler {
 
-    private static CompanyAssembler instance;
-    private CompanyAssembler() {}
-
-    public static CompanyAssembler getInstance() {
-        if(instance == null) {
-            synchronized (CompanyAssembler.class) {
-                if(instance == null) {
-                    instance = new CompanyAssembler();
-                }
-            }
-        }
-        return instance;
-    }
     public Company assemble(CreateCompanyPojo request) {
 
         Company company = new Company();

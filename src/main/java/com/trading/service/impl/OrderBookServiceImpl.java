@@ -19,6 +19,7 @@ import static com.trading.constants.Constants.BOOKABLE;
 public class OrderBookServiceImpl implements OrderBookService {
 
     private final OrderRepo orderRepo;
+    private final OrderAssembler orderAssembler;
 
     @Override
     @Transactional(readOnly = true)
@@ -26,7 +27,7 @@ public class OrderBookServiceImpl implements OrderBookService {
         return orderRepo.findByCompanyIdAndSideAndStatusInOrderByPriceDescCreatedAtAsc(
                         companyId, OrderSide.BUY, BOOKABLE)
                 .stream()
-                .map(OrderAssembler.getInstance()::assembleDetails)
+                .map(orderAssembler::assembleDetails)
                 .toList();
     }
 
@@ -36,7 +37,7 @@ public class OrderBookServiceImpl implements OrderBookService {
         return orderRepo.findByCompanyIdAndSideAndStatusInOrderByPriceAscCreatedAtAsc(
                         companyId, OrderSide.SELL, BOOKABLE)
                 .stream()
-                .map(OrderAssembler.getInstance()::assembleDetails)
+                .map(orderAssembler::assembleDetails)
                 .toList();
     }
 }

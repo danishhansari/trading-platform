@@ -14,6 +14,7 @@ import com.trading.security.CustomUserDetailsService;
 import com.trading.security.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -42,7 +43,11 @@ public class UserServiceImpl implements UserService {
         String hashedPassword = passwordEncoder.encode(pojo.getPassword());
         User user = userAssembler.assembleDTO(pojo);
         user.setPassword(hashedPassword);
-        user = userRepository.save(user);
+        try {
+            user = userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new UserException("Email already exists");
+        }
         if(user.getRole() == UserRole.TRADER) {
             applicationEventPublisher.publish(new UserCreatedEvent(user.getId()));
         }

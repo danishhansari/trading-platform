@@ -35,6 +35,8 @@ public class OrderServiceImpl implements OrderService {
     private final CompanyRepo companyRepo;
     private final WalletRepo walletRepo;
     private final HoldingRepo holdingRepo;
+
+    private final OrderAssembler orderAssembler;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
@@ -51,14 +53,14 @@ public class OrderServiceImpl implements OrderService {
         if (pojo.getSide() == OrderSide.BUY) validateBuyOrder(traderId, pojo.getQuantity(), pojo.getPrice());
         if (pojo.getSide() == OrderSide.SELL) validateSellOrder(traderId, company.getId(), pojo.getQuantity());
 
-        Order order = OrderAssembler.getInstance().assemble(pojo, company, trader);
+        Order order = orderAssembler.assemble(pojo, company, trader);
         order = orderRepo.save(order);
 
         applicationEventPublisher.publishEvent(new OrderPlacedEvent(order.getId(),
                 company.getId(), traderId, order.getSide(), order.getQuantity(),
                 order.getPrice(), order.getCreatedAt()));
 
-        return OrderAssembler.getInstance().assembleDetails(order);
+        return orderAssembler.assembleDetails(order);
     }
 
     @Override
@@ -79,7 +81,7 @@ public class OrderServiceImpl implements OrderService {
         order.cancel();
         orderRepo.save(order);
 
-        return OrderAssembler.getInstance().assembleDetails(order);
+        return orderAssembler.assembleDetails(order);
     }
 
     private User getTrader(Long traderId) {

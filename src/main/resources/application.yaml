@@ -29,6 +29,8 @@ spring:
       properties:
         spring.json.trusted.packages: "com.trading.event"
       auto-offset-reset: earliest
+    listener:
+      ack-mode: manual_immediate
 
 jwt:
   secret:

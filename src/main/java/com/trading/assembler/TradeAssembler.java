@@ -4,25 +4,12 @@ import com.trading.dto.TradeDTO;
 import com.trading.entity.Company;
 import com.trading.entity.Order;
 import com.trading.entity.Trade;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
+@Component
 public class TradeAssembler {
-    private static TradeAssembler instance;
-
-    private TradeAssembler() {}
-
-    public static TradeAssembler getInstance() {
-        if (instance == null) {
-            synchronized (TradeAssembler.class) {
-                if (instance == null) {
-                    instance = new TradeAssembler();
-                }
-            }
-        }
-        return instance;
-    }
-
     public Trade assemble(Order buy, Order sell, Company company, Long executedQty, BigDecimal executionPrice) {
         Trade trade = new Trade();
         trade.setBuyOrder(buy);

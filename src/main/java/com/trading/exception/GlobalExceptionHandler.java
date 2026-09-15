@@ -83,4 +83,16 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    @ExceptionHandler(MatchingFailedException.class)
+    public ResponseEntity<ErrorResponse> handleMatchingFailedException(
+            MatchingFailedException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
 }

@@ -7,20 +7,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserAssembler {
-//    private static UserAssembler instance;
-//    private UserAssembler() {}
-
-//    public static UserAssembler getInstance() {
-//        if(instance == null) {
-//            synchronized (UserAssembler.class) {
-//                if(instance == null) {
-//                    instance = new UserAssembler();
-//                }
-//            }
-//        }
-//        return instance;
-//    }
-
     public User assembleDTO (RegisterUserPojo pojo) {
         User user = new User();
         user.setName(pojo.getName());

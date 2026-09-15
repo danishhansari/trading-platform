@@ -19,5 +19,6 @@ public class KafkaEventPublisher {
         orderEventProducer.publish(event);
     }
 
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onUserCreated(UserCreatedEvent event) {userEventProducer.publish(event);}
 }

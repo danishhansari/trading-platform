@@ -24,6 +24,8 @@ public class WalletServiceImpl implements WalletService {
     private final WalletRepo walletRepo;
     private final UserRepo userRepo;
 
+    private final WalletAssembler walletAssembler;
+
     @Override
     @Transactional
     public Wallet createWallet(Long userId) {
@@ -46,7 +48,7 @@ public class WalletServiceImpl implements WalletService {
     public WalletDTO getBalance(Long userId) {
         Wallet wallet = walletRepo.findByUserId(userId)
                 .orElseThrow(() -> new WalletException("Wallet not found for user"));
-        return WalletAssembler.getInstance().assembleDetails(wallet);
+        return walletAssembler.assembleDetails(wallet);
     }
 
     @Transactional(readOnly = true)
@@ -68,7 +70,7 @@ public class WalletServiceImpl implements WalletService {
         wallet.credit(amount);
         wallet = walletRepo.save(wallet);
 
-        return WalletAssembler.getInstance().assembleDetails(wallet);
+        return walletAssembler.assembleDetails(wallet);
     }
 
     @Override
@@ -79,7 +81,7 @@ public class WalletServiceImpl implements WalletService {
         if (wallet.getBalance().compareTo(amount) < 0) throw new WalletException("Insufficient wallet balance");
         wallet.debit(amount);
         wallet = walletRepo.save(wallet);
-        return  WalletAssembler.getInstance().assembleDetails(wallet);
+        return  walletAssembler.assembleDetails(wallet);
     }
 
     private void validateAmount(BigDecimal amount) {

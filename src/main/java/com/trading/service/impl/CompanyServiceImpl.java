@@ -24,6 +24,7 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanyRepo companyRepo;
     private final UserRepo userRepo;
     private final HoldingRepo holdingRepo;
+    private final CompanyAssembler companyAssembler;
 
     @Transactional
     public CompanyDTO onBoardCompany(CreateCompanyPojo request) {
@@ -36,7 +37,7 @@ public class CompanyServiceImpl implements CompanyService {
 
         if (owner.getRole() != UserRole.TRADER) throw new UserException("Initial owner must be a trader");
 
-        Company company = CompanyAssembler.getInstance().assemble(request);
+        Company company = companyAssembler.assemble(request);
 
         company = companyRepo.save(company);
 
@@ -45,6 +46,6 @@ public class CompanyServiceImpl implements CompanyService {
 
         holdingRepo.save(holding);
 
-        return CompanyAssembler.getInstance().assembleDetails(company);
+        return companyAssembler.assembleDetails(company);
     }
 }

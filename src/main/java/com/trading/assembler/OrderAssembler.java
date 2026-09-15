@@ -6,24 +6,10 @@ import com.trading.entity.Company;
 import com.trading.entity.Order;
 import com.trading.entity.User;
 import com.trading.pojo.OrderPojo;
+import org.springframework.stereotype.Component;
 
+@Component
 public class OrderAssembler {
-
-    private static OrderAssembler instance;
-
-    private OrderAssembler() {}
-
-    public static OrderAssembler getInstance() {
-        if (instance == null) {
-            synchronized (OrderAssembler.class) {
-                if (instance == null) {
-                    instance = new OrderAssembler();
-                }
-            }
-        }
-        return instance;
-    }
-
     public Order assemble(OrderPojo request,Company company, User trader) {
         Order order = new Order();
         order.setTrader(trader);
