@@ -23,7 +23,7 @@ public class HoldingCache {
         return "holding:{" + userId + "}:" + companyId;
     }
 
-    public Optional<Long> getQuantity(Long userId, Long companyId) {
+    public Optional<Long>getQuantity(Long userId, Long companyId) {
         RBucket<Long> bucket = redissonClient.getBucket(key(userId, companyId));
         Long cached = bucket.get();
         if (cached != null) {

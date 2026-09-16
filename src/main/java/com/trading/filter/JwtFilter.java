@@ -3,6 +3,7 @@ package com.trading.filter;
 import com.trading.constants.Constants;
 import com.trading.security.JwtService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,14 +34,28 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if(authHeader != null && authHeader.startsWith(Constants.TOKEN_PREFIX)) {
             token = authHeader.substring(Constants.TOKEN_PREFIX.length());
-            Claims claims = jwtService.validateTokenGetClaims(token);
-            userName = claims.getSubject();
-            userId = claims.get("userId", Long.class);
-            request.setAttribute("x-user-id", userId);
-            String role = claims.get("role", String.class);
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userName,
-                    null, List.of(new SimpleGrantedAuthority(role)));
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            try {
+                Claims claims = jwtService.validateTokenGetClaims(token);
+                userName = claims.getSubject();
+                userId = claims.get("userId", Long.class);
+                request.setAttribute("x-user-id", userId);
+                String role = claims.get("role", String.class);
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userName,
+                        null, List.of(new SimpleGrantedAuthority(role)));
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            } catch (ExpiredJwtException e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+
+                response.getWriter().write("""
+                   {
+                    "status": 401,
+                    "message": "JWT token has expired"
+                    }
+                    """);
+
+                return;
+            }
         }
         filterChain.doFilter(request, response);
     }

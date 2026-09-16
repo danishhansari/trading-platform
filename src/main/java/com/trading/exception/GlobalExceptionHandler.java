@@ -108,4 +108,17 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(error);
     }
+
+    @ExceptionHandler(RiskViolationException.class)
+    public ResponseEntity<ErrorResponse> handleRiskViolationException(
+            RiskViolationException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
 }

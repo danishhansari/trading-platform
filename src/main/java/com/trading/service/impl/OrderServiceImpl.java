@@ -12,6 +12,7 @@ import com.trading.exception.*;
 import com.trading.pojo.OrderPojo;
 import com.trading.repo.OrderRepo;
 import com.trading.repo.UserRepo;
+import com.trading.risk.RiskEngine;
 import com.trading.service.OrderService;
 import com.trading.cache.CompanyCache;
 import com.trading.cache.HoldingCache;
@@ -35,6 +36,7 @@ public class OrderServiceImpl implements OrderService {
     private final WalletBalanceCache walletBalanceCache;
     private final HoldingCache holdingCache;
     private final UserRepo userRepo;
+    private final RiskEngine riskEngine;
 
     @Override
     @Transactional
@@ -44,6 +46,7 @@ public class OrderServiceImpl implements OrderService {
         Company company = companyCache.getCompany(pojo.getCompanyId());
 
         validateOrder(pojo);
+        riskEngine.validate(trader, company, pojo);
 
         if (pojo.getSide() == OrderSide.BUY) validateBuyOrder(traderId, pojo.getQuantity(), pojo.getPrice());
         if (pojo.getSide() == OrderSide.SELL) validateSellOrder(traderId, company.getId(), pojo.getQuantity());
@@ -107,15 +110,15 @@ public class OrderServiceImpl implements OrderService {
 
     private void validateOrder(OrderPojo pojo) {
         if (pojo.getQuantity() == null || pojo.getQuantity() <= 0) {
-            throw new IllegalArgumentException("Quantity must be greater than zero");
+            throw new OrderException("Quantity must be greater than zero");
         }
 
         if (pojo.getPrice() == null || pojo.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Price must be greater than zero");
+            throw new OrderException("Price must be greater than zero");
         }
 
         if (pojo.getSide() == null) {
-            throw new IllegalArgumentException("Order side is required");
+            throw new OrderException("Order side is required");
         }
     }
 }
