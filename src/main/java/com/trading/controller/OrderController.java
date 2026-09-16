@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,9 +20,11 @@ public class OrderController {
 
     @PostMapping
     @PreAuthorize("hasRole('TRADER')")
-    public ResponseEntity<OrderDTO> placeOrder(@RequestBody OrderPojo pojo, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<OrderDTO> placeOrder(@RequestBody OrderPojo pojo,
+                                               HttpServletRequest httpServletRequest,
+                                               Authentication authentication) {
         Long traderId = (Long) httpServletRequest.getAttribute("x-user-id");
-        OrderDTO orderDTO = orderService.placeOrder(traderId, pojo);
+        OrderDTO orderDTO = orderService.placeOrder(traderId, pojo, authentication);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderDTO);
     }
 

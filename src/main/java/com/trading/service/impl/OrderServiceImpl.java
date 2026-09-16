@@ -1,26 +1,24 @@
 package com.trading.service.impl;
 
 import com.trading.assembler.OrderAssembler;
+import com.trading.entity.User;
 import com.trading.enums.OrderSide;
 import com.trading.enums.OrderStatus;
-import com.trading.enums.UserRole;
 import com.trading.dto.OrderDTO;
 import com.trading.entity.Company;
-import com.trading.entity.Holding;
 import com.trading.entity.Order;
-import com.trading.entity.User;
-import com.trading.entity.Wallet;
 import com.trading.event.OrderPlacedEvent;
 import com.trading.exception.*;
 import com.trading.pojo.OrderPojo;
-import com.trading.repo.CompanyRepo;
-import com.trading.repo.HoldingRepo;
 import com.trading.repo.OrderRepo;
 import com.trading.repo.UserRepo;
-import com.trading.repo.WalletRepo;
 import com.trading.service.OrderService;
+import com.trading.cache.CompanyCache;
+import com.trading.cache.HoldingCache;
+import com.trading.cache.WalletBalanceCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,22 +29,19 @@ import java.math.BigDecimal;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepo orderRepo;
-    private final UserRepo userRepo;
-    private final CompanyRepo companyRepo;
-    private final WalletRepo walletRepo;
-    private final HoldingRepo holdingRepo;
-
+    private final CompanyCache companyCache;
     private final OrderAssembler orderAssembler;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final WalletBalanceCache walletBalanceCache;
+    private final HoldingCache holdingCache;
+    private final UserRepo userRepo;
 
     @Override
     @Transactional
-    public OrderDTO placeOrder(Long traderId, OrderPojo pojo) {
+    public OrderDTO placeOrder(Long traderId, OrderPojo pojo, Authentication authentication) {
 
-        User trader = getTrader(traderId);
-
-        Company company = companyRepo.findById(pojo.getCompanyId())
-                .orElseThrow(() -> new CompanyException("Company not found"));
+        User trader = getTrader(traderId, authentication);
+        Company company = companyCache.getCompany(pojo.getCompanyId());
 
         validateOrder(pojo);
 
@@ -66,7 +61,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDTO cancelOrder(Long traderId, Long orderId) {
-
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new OrderException("Order not found"));
 
@@ -84,38 +78,29 @@ public class OrderServiceImpl implements OrderService {
         return orderAssembler.assembleDetails(order);
     }
 
-    private User getTrader(Long traderId) {
-
-        User trader = userRepo.findById(traderId)
-                .orElseThrow(() -> new UserException("Trader not found")
-                );
-
-        if (trader.getRole() != UserRole.TRADER) {
+    private User getTrader(Long traderId, Authentication authentication) {
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+        if (!role.equals("ROLE_TRADER")) {
             throw new IllegalArgumentException("Only traders can place orders");
         }
-
-        return trader;
+        return userRepo.getReferenceById(traderId);
     }
 
     private void validateBuyOrder(Long traderId, Long quantity, BigDecimal price) {
-
-        Wallet wallet = walletRepo.findByUserId(traderId)
-                .orElseThrow(() -> new IllegalArgumentException("Trader wallet not found")
-                );
+        BigDecimal balance = walletBalanceCache.getBalance(traderId);
 
         BigDecimal orderValue = price.multiply(BigDecimal.valueOf(quantity));
 
-        if (wallet.getBalance().compareTo(orderValue) < 0) {
+        if (balance.compareTo(orderValue) < 0) {
             throw new WalletException("Insufficient wallet balance for order");
         }
     }
 
     private void validateSellOrder(Long traderId, Long companyId, Long quantity) {
-        Holding holding = holdingRepo.findByUserIdAndCompanyId(traderId, companyId)
-                        .orElseThrow(() -> new HoldingException("Holding not found for company")
-                );
+        Long holding = holdingCache.getQuantity(traderId, companyId)
+                .orElseThrow(() -> new HoldingException("Holding not found for company"));
 
-        if (holding.getQuantity() < quantity) {
+        if (holding < quantity) {
             throw new HoldingException("Insufficient shares for order");
         }
     }

@@ -9,6 +9,7 @@ import com.trading.exception.*;
 import com.trading.repo.UserRepo;
 import com.trading.repo.WalletRepo;
 import com.trading.service.WalletService;
+import com.trading.cache.WalletBalanceCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,18 +24,18 @@ public class WalletServiceImpl implements WalletService {
 
     private final WalletRepo walletRepo;
     private final UserRepo userRepo;
-
+    private final WalletBalanceCache walletBalanceCache;
     private final WalletAssembler walletAssembler;
 
     @Override
     @Transactional
     public Wallet createWallet(Long userId) {
         User user = userRepo.findById(userId)
-                .orElseThrow(() ->
-                        new UserException("User not found")
-                );
+                    .orElseThrow(() ->
+                        new UserException("User not found"));
 
-        if (user.getRole() != UserRole.TRADER) throw new WalletException("Wallet can only be created for a trader");
+        if (user.getRole() != UserRole.TRADER)
+            throw new WalletException("Wallet can only be created for a trader");
 
         Wallet wallet = new Wallet();
         wallet.setUser(user);
@@ -46,9 +47,8 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional(readOnly = true)
     public WalletDTO getBalance(Long userId) {
-        Wallet wallet = walletRepo.findByUserId(userId)
-                .orElseThrow(() -> new WalletException("Wallet not found for user"));
-        return walletAssembler.assembleDetails(wallet);
+        BigDecimal wallet = walletBalanceCache.getBalance(userId);
+        return walletAssembler.assembleDetails(userId, wallet);
     }
 
     @Transactional(readOnly = true)
@@ -69,6 +69,7 @@ public class WalletServiceImpl implements WalletService {
 
         wallet.credit(amount);
         wallet = walletRepo.save(wallet);
+        walletBalanceCache.invalidate(userId);
 
         return walletAssembler.assembleDetails(wallet);
     }
@@ -81,6 +82,8 @@ public class WalletServiceImpl implements WalletService {
         if (wallet.getBalance().compareTo(amount) < 0) throw new WalletException("Insufficient wallet balance");
         wallet.debit(amount);
         wallet = walletRepo.save(wallet);
+        walletBalanceCache.invalidate(userId);
+
         return  walletAssembler.assembleDetails(wallet);
     }
 

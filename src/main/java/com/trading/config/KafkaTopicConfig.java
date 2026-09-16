@@ -24,6 +24,6 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic usersDltTopic() {
-        return new NewTopic("users.dlt", 4, (short) 3);
+        return new NewTopic("users-dlt", 4, (short) 3);
     }
 }

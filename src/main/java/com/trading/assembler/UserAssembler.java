@@ -20,6 +20,7 @@ public class UserAssembler {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
+                user.getRole(),
                 jwt
         );
     }

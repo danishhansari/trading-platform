@@ -4,11 +4,12 @@ import com.trading.entity.*;
 import com.trading.enums.TradeStatus;
 import com.trading.exception.HoldingException;
 import com.trading.exception.TradeException;
-import com.trading.exception.WalletException;
 import com.trading.repo.HoldingRepo;
 import com.trading.repo.TradeRepo;
-import com.trading.repo.WalletRepo;
 import com.trading.service.SettlementExecutor;
+import com.trading.service.WalletService;
+import com.trading.cache.CompanyCache;
+import com.trading.cache.HoldingCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
@@ -23,9 +24,11 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class SettlementExecutorImpl implements SettlementExecutor {
 
-    private final WalletRepo walletRepo;
     private final HoldingRepo holdingRepo;
     private final TradeRepo tradeRepo;
+    private final CompanyCache companyCache;
+    private final WalletService walletService;
+    private final HoldingCache holdingCache;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Retryable(retryFor = ObjectOptimisticLockingFailureException.class, maxAttempts = 3, backoff = @Backoff(delay = 50))
@@ -39,16 +42,11 @@ public class SettlementExecutorImpl implements SettlementExecutor {
 
         User buyer = trade.getBuyOrder().getTrader();
         User seller = trade.getSellOrder().getTrader();
-        Company company = trade.getCompany();
+        Company company = companyCache.getCompany(trade.getCompany().getId());
         BigDecimal amount = trade.getPrice().multiply(BigDecimal.valueOf(trade.getQuantity()));
 
-        Wallet buyerWallet = walletRepo.findByUserId(buyer.getId())
-                .orElseThrow(() -> new WalletException("Buyer wallet not found"));
-        Wallet sellerWallet = walletRepo.findByUserId(seller.getId())
-                .orElseThrow(() -> new WalletException("Seller wallet not found"));
-
-        buyerWallet.debit(amount);
-        sellerWallet.credit(amount);
+        walletService.withdraw(buyer.getId(), amount);
+        walletService.deposit(seller.getId(), amount);
 
         Holding buyerHolding = holdingRepo.findByUserIdAndCompanyId(buyer.getId(), company.getId())
                 .orElseGet(() -> holdingRepo.save(new Holding(buyer, company)));
@@ -57,11 +55,11 @@ public class SettlementExecutorImpl implements SettlementExecutor {
 
         buyerHolding.increase(trade.getQuantity());
         sellerHolding.decrease(trade.getQuantity());
-
-        walletRepo.save(buyerWallet);
-        walletRepo.save(sellerWallet);
         holdingRepo.save(buyerHolding);
         holdingRepo.save(sellerHolding);
+
+        holdingCache.invalidate(buyer.getId(), company.getId());
+        holdingCache.invalidate(seller.getId(), company.getId());
 
         trade.setTradeStatus(TradeStatus.SETTLED);
         tradeRepo.save(trade);

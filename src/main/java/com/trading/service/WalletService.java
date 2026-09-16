@@ -2,6 +2,8 @@ package com.trading.service;
 
 import com.trading.dto.WalletDTO;
 import com.trading.entity.Wallet;
+import org.springframework.security.core.Authentication;
+
 import java.math.BigDecimal;
 
 public interface WalletService {
