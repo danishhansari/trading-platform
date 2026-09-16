@@ -5,8 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.retry.annotation.EnableRetry;
 
-@EnableKafka
-@EnableRetry
 @SpringBootApplication
 public class TradingPlatform {
 

@@ -17,32 +17,6 @@ spring:
       file: classpath:redisson.yml
   kafka:
     bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
-    producer:
-      acks: all
-      retries: 2147483647
-      key-serializer: org.apache.kafka.common.serialization.LongSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
-      properties:
-        enable.idempotence: true
-        max.in.flight.requests.per.connection: 5
-        delivery.timeout.ms: 120000
-        linger.ms: 5
-    consumer:
-      group-id: matching-engine-group
-      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
-      properties:
-        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.LongDeserializer
-        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
-        spring.json.trusted.packages: "com.trading.event"
-
-        max.poll.records: 500
-        max.poll.interval.ms: 300000
-
-      auto-offset-reset: earliest
-    listener:
-      ack-mode: manual_immediate
-
 jwt:
   secret:
     key: "thispasswordisverytoughtocrackevenicant"
