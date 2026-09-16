@@ -5,11 +5,12 @@ import com.trading.dto.TradeDTO;
 import com.trading.entity.Order;
 import com.trading.entity.Trade;
 import com.trading.enums.OrderSide;
+import com.trading.event.TradesMatchedEvent;
 import com.trading.repo.OrderRepo;
 import com.trading.repo.TradeRepo;
 import com.trading.service.MatchExecutionService;
-import com.trading.service.SettlementService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,8 +26,8 @@ import static com.trading.constants.Constants.BOOKABLE;
 public class MatchExecutionServiceImpl implements MatchExecutionService {
     private final OrderRepo orderRepo;
     private final TradeRepo tradeRepo;
-    private final SettlementService settlementService;
     private final TradeAssembler tradeAssembler;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     @Transactional
@@ -68,7 +69,11 @@ public class MatchExecutionServiceImpl implements MatchExecutionService {
         orderRepo.saveAll(buys);
         orderRepo.saveAll(sells);
         tradeRepo.saveAll(trades);
-        settlementService.settle(trades);
+
+        if (!trades.isEmpty()) {
+            List<Long> tradeIds = trades.stream().map(Trade::getId).toList();
+            applicationEventPublisher.publishEvent(new TradesMatchedEvent(companyId, tradeIds));
+        }
 
         return trades.stream()
                 .map(tradeAssembler::assembleDetails).toList();

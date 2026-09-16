@@ -1,13 +1,13 @@
 package com.trading.config;
 
 import com.trading.event.OrderPlacedEvent;
+import com.trading.event.TradesMatchedEvent;
 import com.trading.event.UserCreatedEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -45,6 +45,17 @@ public class KafkaProducerConfig {
     public KafkaTemplate<Long, OrderPlacedEvent> orderKafkaTemplate(
             ProducerFactory<Long, OrderPlacedEvent> orderProducerFactory) {
         return new KafkaTemplate<>(orderProducerFactory);
+    }
+
+    @Bean
+    public ProducerFactory<Long, TradesMatchedEvent> tradeProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(baseProducerProps());
+    }
+
+    @Bean
+    public KafkaTemplate<Long, TradesMatchedEvent> tradeKafkaTemplate(
+            ProducerFactory<Long, TradesMatchedEvent> tradeProducerFactory) {
+        return new KafkaTemplate<>(tradeProducerFactory);
     }
 
     @Bean

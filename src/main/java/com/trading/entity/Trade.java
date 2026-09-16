@@ -1,5 +1,6 @@
 package com.trading.entity;
 
+import com.trading.enums.TradeStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,6 +36,10 @@ public class Trade {
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TradeStatus tradeStatus = TradeStatus.PENDING;
 
     @Column(nullable = false)
     @CreationTimestamp

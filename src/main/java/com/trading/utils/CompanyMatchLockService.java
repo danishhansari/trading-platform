@@ -3,13 +3,12 @@ package com.trading.utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Component
 @RequiredArgsConstructor
-public class CompanyMatchLockRegistry {
+public class CompanyMatchLockService {
 
     private static final String LOCK_PREFIX = "lock:match:company:";
     private static final long WAIT_SECONDS = 2;

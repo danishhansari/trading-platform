@@ -14,6 +14,7 @@ import com.trading.security.CustomUserDetailsService;
 import com.trading.security.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final CustomUserDetailsService customUserDetailsService;
-    private final UserEventProducer applicationEventPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final UserAssembler userAssembler;
 
     @Override
@@ -49,7 +50,7 @@ public class UserServiceImpl implements UserService {
             throw new UserException("Email already exists");
         }
         if(user.getRole() == UserRole.TRADER) {
-            applicationEventPublisher.publish(new UserCreatedEvent(user.getId()));
+            applicationEventPublisher.publishEvent(new UserCreatedEvent(user.getId()));
         }
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(),
                 user.getPassword(),
