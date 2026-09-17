@@ -17,6 +17,7 @@ import com.trading.service.OrderService;
 import com.trading.cache.CompanyCache;
 import com.trading.cache.HoldingCache;
 import com.trading.cache.WalletBalanceCache;
+import com.trading.utils.TraderPositionLockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
@@ -37,6 +38,7 @@ public class OrderServiceImpl implements OrderService {
     private final HoldingCache holdingCache;
     private final UserRepo userRepo;
     private final RiskEngine riskEngine;
+    private final TraderPositionLockService traderPositionLockService;
 
     @Override
     @Transactional
@@ -46,19 +48,21 @@ public class OrderServiceImpl implements OrderService {
         Company company = companyCache.getCompany(pojo.getCompanyId());
 
         validateOrder(pojo);
-        riskEngine.validate(trader, company, pojo);
+        return traderPositionLockService.withLock(traderId, company.getId(), () -> {
+            riskEngine.validate(trader, company, pojo);
 
-        if (pojo.getSide() == OrderSide.BUY) validateBuyOrder(traderId, pojo.getQuantity(), pojo.getPrice());
-        if (pojo.getSide() == OrderSide.SELL) validateSellOrder(traderId, company.getId(), pojo.getQuantity());
+            if (pojo.getSide() == OrderSide.BUY) validateBuyOrder(traderId, pojo.getQuantity(), pojo.getPrice());
+            if (pojo.getSide() == OrderSide.SELL) validateSellOrder(traderId, company.getId(), pojo.getQuantity());
 
-        Order order = orderAssembler.assemble(pojo, company, trader);
-        order = orderRepo.save(order);
+            Order order = orderAssembler.assemble(pojo, company, trader);
+            order = orderRepo.save(order);
 
-        applicationEventPublisher.publishEvent(new OrderPlacedEvent(order.getId(),
-                company.getId(), traderId, order.getSide(), order.getQuantity(),
-                order.getPrice(), order.getCreatedAt()));
+            applicationEventPublisher.publishEvent(new OrderPlacedEvent(order.getId(),
+                    company.getId(), traderId, order.getSide(), order.getQuantity(),
+                    order.getPrice(), order.getCreatedAt()));
 
-        return orderAssembler.assembleDetails(order);
+            return orderAssembler.assembleDetails(order);
+        });
     }
 
     @Override
