@@ -69,6 +69,7 @@ public class SettlementExecutorImpl implements SettlementExecutor {
     public void markFailed(Long tradeId, String reason) {
         tradeRepo.findById(tradeId).ifPresent(trade -> {
             trade.setTradeStatus(TradeStatus.SETTLEMENT_FAILED);
+            trade.setSettlementFailureReason(reason);
             tradeRepo.save(trade);
         });
     }

@@ -41,6 +41,9 @@ public class Trade {
     @Column(nullable = false)
     private TradeStatus tradeStatus = TradeStatus.PENDING;
 
+    @Column(name = "settlement_failure_reason")
+    private String settlementFailureReason;
+
     @Column(nullable = false)
     @CreationTimestamp
     private LocalDateTime executedAt;
