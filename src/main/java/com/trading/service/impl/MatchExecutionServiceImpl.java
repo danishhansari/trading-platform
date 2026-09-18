@@ -1,6 +1,7 @@
 package com.trading.service.impl;
 
 import com.trading.assembler.TradeAssembler;
+import com.trading.cache.BoundedIdTracker;
 import com.trading.dto.TradeDTO;
 import com.trading.entity.Order;
 import com.trading.entity.Trade;
@@ -10,6 +11,8 @@ import com.trading.repo.OrderRepo;
 import com.trading.repo.TradeRepo;
 import com.trading.service.MatchExecutionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,9 @@ public class MatchExecutionServiceImpl implements MatchExecutionService {
     private final TradeRepo tradeRepo;
     private final TradeAssembler tradeAssembler;
     private final ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    @Qualifier("processedOrderTracker")
+    private BoundedIdTracker processedOrderTracker;
 
     @Override
     @Transactional
@@ -37,7 +43,6 @@ public class MatchExecutionServiceImpl implements MatchExecutionService {
                 companyId, OrderSide.BUY, BOOKABLE));
         List<Order> sells = new ArrayList<>(orderRepo.findByCompanyIdAndSideAndStatusInOrderByPriceAscCreatedAtAsc(
                 companyId, OrderSide.SELL, BOOKABLE));
-
         List<Trade> trades = new ArrayList<>();
 
         for (Order buy : buys) {
@@ -60,6 +65,9 @@ public class MatchExecutionServiceImpl implements MatchExecutionService {
                 sell.reduceRemainingQuantity(executedQty);
                 trades.add(tradeAssembler
                         .assemble(buy, sell, buy.getCompany(), executedQty, executionPrice));
+
+                processedOrderTracker.markProcessed(buy.getId());
+                processedOrderTracker.markProcessed(sell.getId());
 
                 if (sell.getRemainingQuantity() == 0) {
                     sellIt.remove();

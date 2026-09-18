@@ -18,6 +18,16 @@ public class KafkaTopicConfig {
     }
 
     @Bean
+    public NewTopic tradesTopic() {
+        return new NewTopic("trades", 4, (short) 3);
+    }
+
+    @Bean
+    public NewTopic tradesDltTopic() {
+        return new NewTopic("trades-dlt", 4, (short) 3);
+    }
+
+    @Bean
     public NewTopic usersTopic() {
         return new NewTopic("users", 4, (short) 3);
     }

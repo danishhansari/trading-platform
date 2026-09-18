@@ -1,11 +1,14 @@
 package com.trading.consumer;
 
+import com.trading.cache.BoundedIdTracker;
 import com.trading.enums.OrderStatus;
 import com.trading.event.OrderPlacedEvent;
 import com.trading.repo.OrderRepo;
 import com.trading.service.MatchingEngineService;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -16,9 +19,17 @@ public class OrderEventConsumer {
 
     private final MatchingEngineService matchingEngineService;
     private final OrderRepo orderRepo;
+    @Autowired
+    @Qualifier("processedOrderTracker")
+    private final BoundedIdTracker processedOrderTracker;
 
-    @KafkaListener(topics = "orders", groupId = "matching-engine-group", concurrency = "4")
+    @KafkaListener(topics = "orders", groupId = "matching-engine-group")
     public void onOrderPlaced(OrderPlacedEvent event, Acknowledgment ack) {
+        if (processedOrderTracker.alreadyProcessed(event.orderId())) {
+            ack.acknowledge();
+            processedOrderTracker.remove(event.orderId());
+            return;
+        }
         matchingEngineService.match(event.companyId());
         ack.acknowledge();
     }
