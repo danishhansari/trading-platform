@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Price Feed Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        :root { color-scheme: light dark; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            max-width: 640px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        h2 { margin-bottom: 4px; }
+        .row { display: flex; gap: 8px; align-items: center; margin: 12px 0; }
+        input, button {
+            font-size: 14px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #999;
+        }
+        button { cursor: pointer; background: #2563eb; color: white; border: none; }
+        button:hover { background: #1d4ed8; }
+
+        #status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .status-connecting { background: #fde68a; color: #78350f; }
+        .status-connected { background: #bbf7d0; color: #14532d; }
+        .status-disconnected { background: #fecaca; color: #7f1d1d; }
+
+        #priceCard {
+            margin-top: 20px;
+            padding: 24px;
+            border-radius: 12px;
+            border: 2px solid #333;
+            text-align: center;
+            transition: background-color 0.15s ease;
+        }
+        #priceCard.flash { background-color: #fef08a; }
+
+        #priceValue { font-size: 56px; font-weight: 700; margin: 0; }
+        #tickId { font-size: 13px; color: #666; margin-top: 6px; }
+        #tickCount { font-size: 13px; color: #666; }
+
+        #log {
+            margin-top: 20px;
+            height: 180px;
+            overflow-y: auto;
+            background: #111827;
+            color: #d1fae5;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Live Price Feed Test</h2>
+<span id="status" class="status-disconnected">disconnected</span>
+
+<div class="row">
+    <input id="wsUrl" value="http://localhost:8080/api/v1/ws" size="30">
+    <input id="companyId" value="1" size="4" placeholder="companyId">
+    <button onclick="connect()">Connect</button>
+</div>
+
+<div id="priceCard">
+    <p id="priceValue">—</p>
+    <div id="tickId">no ticks received yet</div>
+    <div id="tickCount">ticks: 0</div>
+</div>
+
+<div id="log"></div>
+
+<script>
+    let stompClient = null;
+    let tickCount = 0;
+
+    function setStatus(text, cls) {
+        const el = document.getElementById('status');
+        el.textContent = text;
+        el.className = 'status-' + cls;
+    }
+
+    function log(line) {
+        const el = document.getElementById('log');
+        const time = new Date().toLocaleTimeString();
+        el.textContent += `[${time}] ${line}\n`;
+        el.scrollTop = el.scrollHeight;
+    }
+
+    function flashCard() {
+        const card = document.getElementById('priceCard');
+        card.classList.add('flash');
+        setTimeout(() => card.classList.remove('flash'), 400);
+    }
+
+    function connect() {
+        if (stompClient) {
+            stompClient.disconnect();
+        }
+
+        const url = document.getElementById('wsUrl').value;
+        const companyId = document.getElementById('companyId').value;
+
+        setStatus('connecting...', 'connecting');
+        log(`Connecting to ${url} ...`);
+
+        const socket = new SockJS(url);
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null; // silence verbose frame logging in console
+
+        stompClient.connect({}, function () {
+            setStatus('connected', 'connected');
+            log(`Connected. Subscribing to /topic/price/${companyId}`);
+
+            stompClient.subscribe('/topic/price/' + companyId, function (message) {
+                tickCount++;
+                const randomTickId = Math.floor(Math.random() * 900000) + 100000;
+
+                let displayPrice = message.body;
+                try {
+                    const parsed = JSON.parse(message.body);
+                    displayPrice = parsed.lastTradedPrice ?? JSON.stringify(parsed);
+                } catch (e) { /* not JSON, show raw body */ }
+
+                document.getElementById('priceValue').textContent = displayPrice;
+                document.getElementById('tickId').textContent = 'tick id: ' + randomTickId;
+                document.getElementById('tickCount').textContent = 'ticks: ' + tickCount;
+                flashCard();
+
+                log(`PUSH received -> ${message.body}`);
+            });
+        }, function (error) {
+            setStatus('disconnected', 'disconnected');
+            log('Connection error: ' + error);
+        });
+
+        socket.onclose = function () {
+            setStatus('disconnected', 'disconnected');
+            log('Socket closed.');
+        };
+    }
+</script>
+
+</body>
+</html>
