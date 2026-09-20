@@ -17,8 +17,9 @@ public class CompanyAssembler {
         company.setSymbol(request.getSymbol());
         company.setTotalShares(request.getTotalShares());
         company.setReferencePrice(request.getReferencePrice());
-        company.setStatus(CompanyStatus.ACTIVE);
-
+        company.setStatus(CompanyStatus.IPO_OPEN);
+        company.setIpoOpensAt(request.getIpoOpensAt());
+        company.setIpoClosesAt(request.getIpoClosesAt());
         return company;
     }
 

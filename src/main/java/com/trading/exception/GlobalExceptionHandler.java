@@ -121,4 +121,17 @@ public class GlobalExceptionHandler {
                 .badRequest()
                 .body(error);
     }
+
+    @ExceptionHandler(IpoException.class)
+    public ResponseEntity<ErrorResponse> handleIpoException(
+            IpoException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                ex.getMessage()
+        );
+
+        return ResponseEntity
+                .badRequest()
+                .body(error);
+    }
 }

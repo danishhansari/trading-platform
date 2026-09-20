@@ -2,5 +2,6 @@ package com.trading.enums;
 
 public enum CompanyStatus {
     ACTIVE,
-    INACTIVE
+    INACTIVE,
+    IPO_OPEN
 }

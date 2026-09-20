@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "companies")
@@ -36,4 +37,13 @@ public class Company {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CompanyStatus status;
+
+    @Column
+    private LocalDateTime ipoOpensAt;
+
+    @Column
+    private LocalDateTime ipoClosesAt;
+
+    @Column(nullable = false)
+    private Long sharesAllotted = 0L;
 }
