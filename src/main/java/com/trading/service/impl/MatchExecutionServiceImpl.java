@@ -6,6 +6,7 @@ import com.trading.dto.TradeDTO;
 import com.trading.entity.Order;
 import com.trading.entity.Trade;
 import com.trading.enums.OrderSide;
+import com.trading.event.MarketPriceEvent;
 import com.trading.event.TradesMatchedEvent;
 import com.trading.repo.OrderRepo;
 import com.trading.repo.TradeRepo;
@@ -80,6 +81,8 @@ public class MatchExecutionServiceImpl implements MatchExecutionService {
 
         if (!trades.isEmpty()) {
             List<Long> tradeIds = trades.stream().map(Trade::getId).toList();
+            Trade lastTrade = trades.get(trades.size() - 1);
+            applicationEventPublisher.publishEvent(new MarketPriceEvent(companyId, lastTrade.getPrice(), lastTrade.getExecutedAt()));
             applicationEventPublisher.publishEvent(new TradesMatchedEvent(companyId, tradeIds));
         }
 

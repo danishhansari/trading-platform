@@ -1,5 +1,6 @@
 package com.trading.config;
 
+import com.trading.event.MarketPriceEvent;
 import com.trading.event.OrderPlacedEvent;
 import com.trading.event.TradesMatchedEvent;
 import com.trading.event.UserCreatedEvent;
@@ -67,6 +68,17 @@ public class KafkaProducerConfig {
     public KafkaTemplate<Long, UserCreatedEvent> userKafkaTemplate(
             ProducerFactory<Long, UserCreatedEvent> userProducerFactory) {
         return new KafkaTemplate<>(userProducerFactory);
+    }
+
+    @Bean
+    public ProducerFactory<Long, MarketPriceEvent> marketPriceProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(baseProducerProps());
+    }
+
+    @Bean
+    public KafkaTemplate<Long, MarketPriceEvent> marketPriceKafkaTemplate(
+            ProducerFactory<Long, MarketPriceEvent> marketPriceProducerFactory) {
+        return new KafkaTemplate<>(marketPriceProducerFactory);
     }
 
     @Bean

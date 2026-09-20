@@ -30,7 +30,8 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                .requestMatchers("/auth/signup", "/auth/login")
+                                .requestMatchers("/auth/signup", "/auth/login",
+                                        "/ws/**", "/ws-raw/**")
                                 .permitAll()
                                 .anyRequest().authenticated()
                 )

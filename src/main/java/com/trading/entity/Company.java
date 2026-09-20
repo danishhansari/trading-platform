@@ -46,4 +46,7 @@ public class Company {
 
     @Column(nullable = false)
     private Long sharesAllotted = 0L;
+
+    @Column(precision = 19, scale = 2)
+    private BigDecimal lastTradedPrice;
 }

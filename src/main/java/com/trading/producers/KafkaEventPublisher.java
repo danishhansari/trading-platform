@@ -1,5 +1,6 @@
 package com.trading.producers;
 
+import com.trading.event.MarketPriceEvent;
 import com.trading.event.OrderPlacedEvent;
 import com.trading.event.TradesMatchedEvent;
 import com.trading.event.UserCreatedEvent;
@@ -15,6 +16,7 @@ public class KafkaEventPublisher {
     private final OrderEventProducer orderEventProducer;
     private final UserEventProducer userEventProducer;
     private final TradeEventProducer tradeEventProducer;
+    private final MarketDataProducer marketDataProducer;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onOrderPersisted(OrderPlacedEvent event) {
@@ -26,4 +28,7 @@ public class KafkaEventPublisher {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onTradesMatched(TradesMatchedEvent event) { tradeEventProducer.publish(event);}
+
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void onMarketDataProduce(MarketPriceEvent event) { marketDataProducer.publish(event); }
 }
