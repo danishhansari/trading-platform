@@ -24,14 +24,8 @@ public class CompanyCache {
     }
 
     public Company getCompany(Long companyId) {
-        RBucket<Company> bucket = redissonClient.getBucket(key(companyId));
-        Company cached = bucket.get();
-        if (cached != null) {
-            return cached;
-        }
-        Company company = companyRepo.findById(companyId)
+      Company company = companyRepo.findById(companyId)
                 .orElseThrow(() -> new CompanyException("Company not found"));
-        bucket.set(company, TTL);
         return company;
     }
 

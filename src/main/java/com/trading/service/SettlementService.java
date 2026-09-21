@@ -5,5 +5,5 @@ import com.trading.entity.Trade;
 import java.util.List;
 
 public interface SettlementService {
-    void settle(List<Trade> trades);
+    void settle(List<Long> trades);
 }

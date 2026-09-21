@@ -5,6 +5,7 @@ import com.trading.enums.CompanyStatus;
 import com.trading.repo.CompanyRepo;
 import com.trading.service.IpoService;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,8 @@ public class IpoClosingSchedular {
     private final CompanyRepo companyRepo;
     private final IpoService ipoService;
 
-    @Scheduled(fixedRate = 60_000)
+
+    @Scheduled(cron = "${schedular.ipo.cron}")
     public void closeExpiredIpos() {
 
         List<Company> expired = companyRepo

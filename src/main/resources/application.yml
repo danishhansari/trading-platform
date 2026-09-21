@@ -5,9 +5,10 @@ spring:
   application:
     name: trading
   datasource:
-    url: jdbc:postgresql://localhost:5432/exchange
+    url: jdbc:p6spy:postgresql://localhost:5432/exchange
     username: exchange_user
     password: exchange_password
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
   jpa:
     hibernate:
       ddl-auto: update
@@ -20,3 +21,6 @@ spring:
 jwt:
   secret:
     key: "thispasswordisverytoughtocrackevenicant"
+schedular:
+  ipo:
+    cron: "0 */1 * * * *"   # every minute, cron syntax

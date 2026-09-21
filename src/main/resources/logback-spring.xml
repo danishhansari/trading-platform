@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="PER_USER_SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator class="ch.qos.logback.classic.sift.MDCBasedDiscriminator">
+            <key>userId</key>
+            <defaultValue>anonymous</defaultValue>
+        </discriminator>
+        <sift>
+            <appender name="FILE-${userId}" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <file>logs/users/user-${userId}.log</file>
+                <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                    <fileNamePattern>logs/users/${userId}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                    <maxFileSize>50MB</maxFileSize>
+                    <maxHistory>30</maxHistory>
+                    <totalSizeCap>2GB</totalSizeCap>
+                </rollingPolicy>
+                <encoder>
+                    <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                </encoder>
+            </appender>
+        </sift>
+
+        <!-- close idle per-user appenders after 5 minutes so file handles don't
+             accumulate across every user who has ever logged in -->
+        <timeout>300000</timeout>
+    </appender>
+
+    <!-- async wrapper so file I/O never blocks the request thread -->
+    <appender name="ASYNC_PER_USER" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="PER_USER_SIFT" />
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold> <!-- don't drop audit logs under load -->
+        <includeCallerData>false</includeCallerData>
+    </appender>
+
+    <!-- route P6Spy's SQL logging through the same per-user split -->
+    <logger name="p6spy" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_PER_USER" />
+    </logger>
+
+    <!-- your own application logs, per-user -->
+    <logger name="com.trading" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_PER_USER" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+</configuration>

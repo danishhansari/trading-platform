@@ -7,6 +7,7 @@ import com.trading.repo.OrderRepo;
 import com.trading.service.MatchingEngineService;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.jboss.logging.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -25,6 +26,8 @@ public class OrderEventConsumer {
 
     @KafkaListener(topics = "orders", groupId = "matching-engine-group")
     public void onOrderPlaced(OrderPlacedEvent event, Acknowledgment ack) {
+        MDC.put("userId", "system-matching"); // or event.traderId().toString() if you want it attributed to the trader
+        MDC.put("companyId", event.companyId().toString());
         if (processedOrderTracker.alreadyProcessed(event.orderId())) {
             ack.acknowledge();
             processedOrderTracker.remove(event.orderId());

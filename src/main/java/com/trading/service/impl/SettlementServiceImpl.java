@@ -16,12 +16,12 @@ public class SettlementServiceImpl implements SettlementService {
     private final SettlementExecutor settlementExecutor;
 
     @Override
-    public void settle(List<Trade> trades) {
-        for (Trade trade : trades) {
+    public void settle(List<Long> trades) {
+        for (Long trade : trades) {
             try {
-                settlementExecutor.attemptSettle(trade.getId());
+                settlementExecutor.attemptSettle(trade);
             } catch (WalletException | HoldingException e) {
-                settlementExecutor.markFailed(trade.getId(), e.getMessage());
+                settlementExecutor.markFailed(trade, e.getMessage());
             }
         }
     }
