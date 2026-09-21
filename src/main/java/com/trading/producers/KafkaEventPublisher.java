@@ -29,6 +29,6 @@ public class KafkaEventPublisher {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onTradesMatched(TradesMatchedEvent event) { tradeEventProducer.publish(event);}
 
-    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onMarketDataProduce(MarketPriceEvent event) { marketDataProducer.publish(event); }
 }

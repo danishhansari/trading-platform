@@ -8,24 +8,16 @@ import org.springframework.context.annotation.Configuration;
 public class KafkaTopicConfig {
 
     @Bean
-    public NewTopic ordersTopic() {
-        return new NewTopic("orders", 4, (short) 3);
-    }
+    public NewTopic ordersTopic() { return new NewTopic("orders", 4, (short) 3); }
 
     @Bean
-    public NewTopic ordersDltTopic() {
-        return new NewTopic("orders-dlt", 4, (short) 3);
-    }
+    public NewTopic ordersDltTopic() { return new NewTopic("orders-dlt", 4, (short) 3); }
 
     @Bean
-    public NewTopic tradesTopic() {
-        return new NewTopic("trades", 4, (short) 3);
-    }
+    public NewTopic tradesTopic() { return new NewTopic("trades", 4, (short) 3); }
 
     @Bean
-    public NewTopic tradesDltTopic() {
-        return new NewTopic("trades-dlt", 4, (short) 3);
-    }
+    public NewTopic tradesDltTopic() { return new NewTopic("trades-dlt", 4, (short) 3); }
 
     @Bean
     public NewTopic usersTopic() {
@@ -38,5 +30,8 @@ public class KafkaTopicConfig {
     }
 
     @Bean
-    public NewTopic marketTopic() { return new NewTopic("market-data", 4, (short) 3); }
+    public NewTopic marketDataTopic() { return new NewTopic("market-data", 4, (short) 3); }
+
+    @Bean
+    public NewTopic marketDataDltTopic() { return new NewTopic("market-data.DLT", 4, (short) 3);}
 }

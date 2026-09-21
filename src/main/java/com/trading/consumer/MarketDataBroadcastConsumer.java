@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
@@ -17,12 +18,14 @@ public class MarketDataBroadcastConsumer {
     private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "market-data", groupId = "broadcast-group", concurrency = "4")
-    public void relayToRedis(MarketPriceEvent event) {
+    public void relayToRedis(MarketPriceEvent event, Acknowledgment ack) {
         try {
             String json = objectMapper.writeValueAsString(event);
             redisTemplate.convertAndSend("price-updates:" + event.companyId(), json);
         } catch (Exception e) {
             log.error("Failed to serialize/publish market data event for company {}", event.companyId(), e);
+        } finally {
+            ack.acknowledge();
         }
     }
 }
