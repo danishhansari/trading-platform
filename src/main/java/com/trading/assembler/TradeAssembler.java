@@ -28,7 +28,8 @@ public class TradeAssembler {
                 trade.getCompany().getId(),
                 trade.getQuantity(),
                 trade.getPrice(),
-                trade.getExecutedAt()
+                trade.getExecutedAt(),
+                trade.getTradeId()
         );
     }
 }

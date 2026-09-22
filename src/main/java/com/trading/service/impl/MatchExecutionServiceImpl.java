@@ -11,6 +11,7 @@ import com.trading.event.TradesMatchedEvent;
 import com.trading.repo.OrderRepo;
 import com.trading.repo.TradeRepo;
 import com.trading.service.MatchExecutionService;
+import com.trading.utils.Logging;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,6 +33,7 @@ public class MatchExecutionServiceImpl implements MatchExecutionService {
     private final TradeRepo tradeRepo;
     private final TradeAssembler tradeAssembler;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final Logging logging;
     @Autowired
     @Qualifier("processedOrderTracker")
     private BoundedIdTracker processedOrderTracker;
@@ -69,6 +71,10 @@ public class MatchExecutionServiceImpl implements MatchExecutionService {
 
                 processedOrderTracker.markProcessed(buy.getId());
                 processedOrderTracker.markProcessed(sell.getId());
+                logging.logForUser(buy.getTrader().getId(), "Matched as BUYER: qty={} price={} counterpartyOrderId={}",
+                        String.valueOf(executedQty), executionPrice, sell.getId());
+                logging.logForUser(sell.getTrader().getId(), "Matched as SELLER: qty={} price={} counterpartyOrderId={}",
+                        String.valueOf(executedQty), executionPrice, buy.getId());
 
                 if (sell.getRemainingQuantity() == 0) {
                     sellIt.remove();

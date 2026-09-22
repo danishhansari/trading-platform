@@ -29,18 +29,16 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
         String token = null;
-        String userName = null;
         Long userId;
 
         if(authHeader != null && authHeader.startsWith(Constants.TOKEN_PREFIX)) {
             token = authHeader.substring(Constants.TOKEN_PREFIX.length());
             try {
                 Claims claims = jwtService.validateTokenGetClaims(token);
-                userName = claims.getSubject();
-                userId = claims.get("userId", Long.class);
+                userId = Long.valueOf(claims.getSubject());
                 request.setAttribute("x-user-id", userId);
                 String role = claims.get("role", String.class);
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userName,
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userId,
                         null, List.of(new SimpleGrantedAuthority(role)));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             } catch (ExpiredJwtException e) {

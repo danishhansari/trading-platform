@@ -39,8 +39,7 @@ public class JwtService {
         return Jwts.builder()
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 86400000)) // 24 hrs
-                .subject(authentication.getName())
-                .claim("userId", userId)
+                .subject(String.valueOf(userId))
                 .claim("role", role)
                 .signWith(secretKey)
                 .compact();

@@ -35,6 +35,7 @@ public class OrderEventConsumer {
         }
         matchingEngineService.match(event.companyId());
         ack.acknowledge();
+        MDC.clear();
     }
 
     @KafkaListener(topics = "orders-dlt", groupId = "dlt-monitor-group")

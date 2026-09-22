@@ -10,7 +10,10 @@ import com.trading.service.SettlementExecutor;
 import com.trading.service.WalletService;
 import com.trading.cache.CompanyCache;
 import com.trading.cache.HoldingCache;
+import com.trading.utils.Logging;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SettlementExecutorImpl implements SettlementExecutor {
@@ -29,6 +33,7 @@ public class SettlementExecutorImpl implements SettlementExecutor {
     private final CompanyCache companyCache;
     private final WalletService walletService;
     private final HoldingCache holdingCache;
+    private final Logging logging;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Retryable(retryFor = ObjectOptimisticLockingFailureException.class, maxAttempts = 3, backoff = @Backoff(delay = 50))
@@ -47,6 +52,11 @@ public class SettlementExecutorImpl implements SettlementExecutor {
 
         walletService.withdraw(buyer.getId(), amount);
         walletService.deposit(seller.getId(), amount);
+
+        logging.logForUser(buyer.getId(), "INFO", "Trade {} settled: debited {} (new balance {})",
+                trade.getId(), amount, walletService.getBalance(buyer.getId()));
+        logging.logForUser(seller.getId(), "INFO", "Trade {} settled: credited {} (new balance {})",
+                trade.getId(), amount, walletService.getBalance(seller.getId()));
 
         Holding buyerHolding = holdingRepo.findByUserIdAndCompanyId(buyer.getId(), company.getId())
                 .orElseGet(() -> holdingRepo.save(new Holding(buyer, company)));
@@ -73,4 +83,5 @@ public class SettlementExecutorImpl implements SettlementExecutor {
             tradeRepo.save(trade);
         });
     }
+
 }

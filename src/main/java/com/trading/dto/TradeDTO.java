@@ -10,5 +10,6 @@ public record TradeDTO(
         Long companyId,
         Long quantity,
         BigDecimal price,
-        LocalDateTime executedAt
+        LocalDateTime executedAt,
+        String tradeId
 ) {}

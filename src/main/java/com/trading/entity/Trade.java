@@ -44,7 +44,15 @@ public class Trade {
     @Column(name = "settlement_failure_reason")
     private String settlementFailureReason;
 
+    @Column(name = "trade_id", nullable = false, unique = true)
+    private String tradeId;
+
     @Column(nullable = false)
     @CreationTimestamp
     private LocalDateTime executedAt;
+
+    @PrePersist
+    public void generateTradeId() {
+        this.tradeId = "#" + this.buyOrder.getId() + "-" + this.sellOrder.getId();
+    }
 }
