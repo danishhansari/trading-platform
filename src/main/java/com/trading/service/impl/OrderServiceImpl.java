@@ -10,11 +10,11 @@ import com.trading.entity.Order;
 import com.trading.event.OrderPlacedEvent;
 import com.trading.exception.*;
 import com.trading.pojo.OrderPojo;
+import com.trading.repo.CompanyRepo;
 import com.trading.repo.OrderRepo;
 import com.trading.repo.UserRepo;
 import com.trading.risk.RiskEngine;
 import com.trading.service.OrderService;
-import com.trading.cache.CompanyCache;
 import com.trading.cache.HoldingCache;
 import com.trading.cache.WalletBalanceCache;
 import com.trading.utils.TraderPositionLockService;
@@ -31,7 +31,6 @@ import java.math.BigDecimal;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepo orderRepo;
-    private final CompanyCache companyCache;
     private final OrderAssembler orderAssembler;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final WalletBalanceCache walletBalanceCache;
@@ -39,13 +38,15 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepo userRepo;
     private final RiskEngine riskEngine;
     private final TraderPositionLockService traderPositionLockService;
+    private final CompanyRepo companyRepo;
 
     @Override
     @Transactional
     public OrderDTO placeOrder(Long traderId, OrderPojo pojo, Authentication authentication) {
 
         User trader = getTrader(traderId, authentication);
-        Company company = companyCache.getCompany(pojo.getCompanyId());
+        Company company = companyRepo.findById(pojo.getCompanyId())
+                .orElseThrow(() -> new CompanyException("Company not found"));
 
         validateOrder(pojo);
         return traderPositionLockService.withLock(traderId, company.getId(), () -> {

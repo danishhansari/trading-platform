@@ -33,5 +33,5 @@ public class KafkaTopicConfig {
     public NewTopic marketDataTopic() { return new NewTopic("market-data", 4, (short) 3); }
 
     @Bean
-    public NewTopic marketDataDltTopic() { return new NewTopic("market-data.DLT", 4, (short) 3);}
+    public NewTopic marketDataDltTopic() { return new NewTopic("market-data-dlt", 4, (short) 3);}
 }

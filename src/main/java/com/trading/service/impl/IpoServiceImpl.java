@@ -1,7 +1,6 @@
 package com.trading.service.impl;
 
 import com.trading.assembler.IpoAssembler;
-import com.trading.cache.CompanyCache;
 import com.trading.dto.IpoApplicationDTO;
 import com.trading.entity.*;
 import com.trading.enums.CompanyStatus;
@@ -23,7 +22,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class IpoServiceImpl implements IpoService {
 
-    private final CompanyCache companyCache;
     private final UserRepo userRepo;
     private final IpoApplicationRepo ipoApplicationRepo;
     private final HoldingRepo holdingRepo;
@@ -43,7 +41,8 @@ public class IpoServiceImpl implements IpoService {
         User trader = userRepo.findById(traderId)
                 .orElseThrow(() -> new UserException("Trader not found"));
 
-        Company company = companyCache.getCompany(companyId);
+        Company company = companyRepo.findById(companyId)
+                .orElseThrow(() -> new CompanyException("Company not found"));
 
         if (company.getStatus() != CompanyStatus.IPO_OPEN) {
             throw new IpoException("IPO is not currently open for this company");
@@ -52,7 +51,6 @@ public class IpoServiceImpl implements IpoService {
         IpoApplication application = new IpoApplication(trader, company, quantity);
         application = ipoApplicationRepo.save(application);
 
-        companyCache.invalidate(companyId);
         return ipoAssembler.assembleDetails(application);
     }
 

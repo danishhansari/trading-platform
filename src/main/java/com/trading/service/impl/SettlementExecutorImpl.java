@@ -2,18 +2,18 @@ package com.trading.service.impl;
 
 import com.trading.entity.*;
 import com.trading.enums.TradeStatus;
+import com.trading.exception.CompanyException;
 import com.trading.exception.HoldingException;
 import com.trading.exception.TradeException;
+import com.trading.repo.CompanyRepo;
 import com.trading.repo.HoldingRepo;
 import com.trading.repo.TradeRepo;
 import com.trading.service.SettlementExecutor;
 import com.trading.service.WalletService;
-import com.trading.cache.CompanyCache;
 import com.trading.cache.HoldingCache;
 import com.trading.utils.Logging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -30,10 +30,10 @@ public class SettlementExecutorImpl implements SettlementExecutor {
 
     private final HoldingRepo holdingRepo;
     private final TradeRepo tradeRepo;
-    private final CompanyCache companyCache;
     private final WalletService walletService;
     private final HoldingCache holdingCache;
     private final Logging logging;
+    private final CompanyRepo companyRepo;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Retryable(retryFor = ObjectOptimisticLockingFailureException.class, maxAttempts = 3, backoff = @Backoff(delay = 50))
@@ -47,7 +47,9 @@ public class SettlementExecutorImpl implements SettlementExecutor {
 
         User buyer = trade.getBuyOrder().getTrader();
         User seller = trade.getSellOrder().getTrader();
-        Company company = companyCache.getCompany(trade.getCompany().getId());
+        Company company = companyRepo.findById(trade.getCompany().getId())
+                .orElseThrow(() -> new CompanyException("Company not found"));
+
         BigDecimal amount = trade.getPrice().multiply(BigDecimal.valueOf(trade.getQuantity()));
 
         walletService.withdraw(buyer.getId(), amount);
